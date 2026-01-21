@@ -3,200 +3,508 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$SKR Airdrop Claim Progress</title>
+    <title>$SKR Airdrop Tracker - Live Claims</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #ffffff;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .token-info {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .progress-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 20px;
+            transition: width 1s ease;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.5);
         }
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 15px;
-            margin: 20px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+
+        .transactions-section {
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
-        }
-        h1 {
-            font-size: 3em;
-            margin: 0;
-            text-shadow: 0 0 10px #ffffff;
-        }
-        .progress-container {
-            width: 80%;
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            overflow: hidden;
-            margin: 20px auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
-        .progress-bar {
-            height: 30px;
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
-            width: 0;
-            transition: width 0.5s ease-in-out;
-            border-radius: 50px;
-        }
-        #progress-text {
-            text-align: center;
-            font-size: 1.5em;
-            margin: 10px 0;
-        }
-        .tx-section {
-            width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
             border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        th {
-            background: rgba(0, 0, 0, 0.3);
+
+        .pulse {
+            width: 12px;
+            height: 12px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
-        a {
-            color: #feb47b;
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .tx-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .tx-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tx-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .tx-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .tx-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .tx-address {
+            font-family: monospace;
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .tx-link {
+            color: #4facfe;
             text-decoration: none;
+            font-size: 0.85em;
+            transition: color 0.3s ease;
         }
-        a:hover {
+
+        .tx-link:hover {
+            color: #00f2fe;
             text-decoration: underline;
         }
-        footer {
+
+        .loading {
             text-align: center;
             padding: 20px;
-            font-size: 0.8em;
-            color: #cccccc;
+            font-size: 1.2em;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .fade-in {
-            animation: fadeIn 1s ease-in-out;
+
+        .creator-link {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .creator-link:hover {
+            color: #00f2fe;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(79, 172, 254, 0.5);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(79, 172, 254, 0.8);
         }
     </style>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 </head>
 <body>
-    <header>
-        <h1>$SKR Airdrop Claim Progress</h1>
-        <p>Real-time tracking of $SKR token claims on Solana Mainnet</p>
-    </header>
+    <div class="container">
+        <div class="header">
+            <h1>$SKR Airdrop Tracker</h1>
+            <p>Real-time claim monitoring on Solana Mainnet</p>
+            <div class="token-info">
+                Token CA: SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3
+            </div>
+        </div>
 
-    <div class="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Claims</div>
+                <div class="stat-value" id="totalClaims">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Amount Claimed</div>
+                <div class="stat-value" id="totalAmount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unique Claimers</div>
+                <div class="stat-value" id="uniqueClaimers">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Update</div>
+                <div class="stat-value" id="lastUpdate" style="font-size: 1.2em;">-</div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h2>Claim Progress</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">
+                    <span id="progressText">0%</span>
+                </div>
+            </div>
+            <p style="text-align: center; opacity: 0.8;" id="progressInfo">Loading data...</p>
+        </div>
+
+        <div class="transactions-section">
+            <div class="transactions-header">
+                <h2>Live Transactions</h2>
+                <div class="live-indicator">
+                    <div class="pulse"></div>
+                    <span>LIVE</span>
+                </div>
+            </div>
+            <div id="errorContainer"></div>
+            <div id="txList" class="tx-list">
+                <div class="loading">Loading transactions...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
+            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">Data updates every 10 seconds</p>
+        </div>
     </div>
-    <p id="progress-text">Loading progress...</p>
-
-    <div class="tx-section fade-in">
-        <h2>Live Recent Transactions</h2>
-        <table id="tx-table">
-            <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Signature (Link)</th>
-                    <th>Pool</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <footer>
-        Created by <a href="https://x.com/ega_2ez4crypto" target="_blank">@ega_2ez4crypto</a>
-    </footer>
 
     <script>
-        const solana = new SolanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-        const tokenMint = new SolanaWeb3.PublicKey('SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3');
-        const pools = [
+        const TOKEN_CA = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
+        const POOL_ADDRESSES = [
             '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
             'CYPdPHMh1mD6ioFFVva7L2rFeKLBpcefVv5yv1p6iRqB',
             '97KS7T6e5KV9iVEGkxkKPNU6CbF7Eeei7dQ498xtSQx3',
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
-        ].map(addr => new SolanaWeb3.PublicKey(addr));
+        ];
 
-        const totalAirdrop = 1960785000; // Total initial airdrop allocation from sources
+        let allTransactions = [];
+        let uniqueAddresses = new Set();
 
-        async function getTokenBalance(account) {
+        async function fetchPoolTransactions(poolAddress) {
             try {
-                const balance = await solana.getTokenAccountBalance(account);
-                return balance.value.uiAmount;
-            } catch (e) {
-                console.error('Error fetching balance:', e);
-                return 0;
-            }
-        }
+                const response = await fetch('https://api.mainnet-beta.solana.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'getSignaturesForAddress',
+                        params: [
+                            poolAddress,
+                            { limit: 20 }
+                        ]
+                    })
+                });
 
-        async function updateProgress() {
-            let totalBalance = 0;
-            for (const pool of pools) {
-                const balance = await getTokenBalance(pool);
-                totalBalance += balance;
-            }
-            const claimed = totalAirdrop - totalBalance;
-            const progress = (claimed / totalAirdrop) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = `${claimed.toLocaleString()} $SKR claimed (${progress.toFixed(2)}%)`;
-        }
-
-        async function getRecentTransactions() {
-            let allTx = [];
-            for (const pool of pools) {
-                try {
-                    const signatures = await solana.getSignaturesForAddress(pool, { limit: 10 });
-                    signatures.forEach(sig => {
-                        sig.pool = pool.toBase58();
-                        allTx.push(sig);
-                    });
-                } catch (e) {
-                    console.error('Error fetching tx for pool:', pool, e);
+                const data = await response.json();
+                if (data.result) {
+                    return data.result.map(tx => ({
+                        ...tx,
+                        poolAddress: poolAddress
+                    }));
                 }
+                return [];
+            } catch (err) {
+                console.error(`Error fetching from pool ${poolAddress}:`, err);
+                return [];
             }
-            allTx.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
-            const uniqueTx = allTx.slice(0, 20); // Top 20 recent
-
-            const tbody = document.querySelector('#tx-table tbody');
-            tbody.innerHTML = '';
-            uniqueTx.forEach(tx => {
-                const row = document.createElement('tr');
-                const time = tx.blockTime ? new Date(tx.blockTime * 1000).toLocaleString() : 'N/A';
-                const sigLink = `<a href="https://solscan.io/tx/${tx.signature}" target="_blank">${tx.signature.slice(0, 10)}...</a>`;
-                const status = tx.err ? 'Failed' : 'Success';
-                row.innerHTML = `<td>${time}</td><td>${sigLink}</td><td>${tx.pool.slice(0, 10)}...</td><td>${status}</td>`;
-                tbody.appendChild(row);
-            });
         }
 
-        async function updateData() {
-            await updateProgress();
-            await getRecentTransactions();
+        async function fetchTransactionDetails(signature) {
+            try {
+                const response = await fetch('https://api.mainnet-beta.solana.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'getTransaction',
+                        params: [
+                            signature,
+                            { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                return data.result;
+            } catch (err) {
+                console.error('Error fetching transaction details:', err);
+                return null;
+            }
         }
 
-        updateData();
-        setInterval(updateData, 30000); // Update every 30 seconds
+        async function loadAllTransactions() {
+            try {
+                document.getElementById('errorContainer').innerHTML = '';
+                
+                const promises = POOL_ADDRESSES.map(addr => fetchPoolTransactions(addr));
+                const results = await Promise.all(promises);
+                
+                const combinedTxs = results.flat();
+                const uniqueTxs = [...new Map(combinedTxs.map(tx => [tx.signature, tx])).values()];
+                
+                uniqueTxs.sort((a, b) => b.blockTime - a.blockTime);
+                
+                allTransactions = uniqueTxs.slice(0, 50);
+                
+                await displayTransactions();
+                updateStats();
+                
+            } catch (err) {
+                console.error('Error loading transactions:', err);
+                showError('Failed to load transaction data. Retrying...');
+            }
+        }
+
+        async function displayTransactions() {
+            const txList = document.getElementById('txList');
+            
+            if (allTransactions.length === 0) {
+                txList.innerHTML = '<div class="loading">No transactions found yet...</div>';
+                return;
+            }
+
+            let html = '';
+            
+            for (const tx of allTransactions.slice(0, 20)) {
+                const details = await fetchTransactionDetails(tx.signature);
+                let amount = 'Unknown';
+                let recipient = 'Unknown';
+
+                if (details && details.meta && details.meta.postTokenBalances) {
+                    const tokenTransfer = details.meta.postTokenBalances.find(
+                        balance => balance.mint === TOKEN_CA
+                    );
+                    
+                    if (tokenTransfer && details.meta.preTokenBalances) {
+                        const preBalance = details.meta.preTokenBalances.find(
+                            b => b.accountIndex === tokenTransfer.accountIndex
+                        );
+                        
+                        if (preBalance) {
+                            const diff = tokenTransfer.uiTokenAmount.uiAmount - preBalance.uiTokenAmount.uiAmount;
+                            if (diff > 0) {
+                                amount = diff.toLocaleString('en-US', { maximumFractionDigits: 2 });
+                            }
+                        }
+                    }
+
+                    if (details.transaction && details.transaction.message && details.transaction.message.accountKeys) {
+                        const accounts = details.transaction.message.accountKeys;
+                        if (accounts.length > 1) {
+                            recipient = accounts[1].pubkey || 'Unknown';
+                            uniqueAddresses.add(recipient);
+                        }
+                    }
+                }
+
+                const date = new Date(tx.blockTime * 1000);
+                const timeAgo = getTimeAgo(date);
+
+                html += `
+                    <div class="tx-item">
+                        <div class="tx-header">
+                            <span>${timeAgo}</span>
+                            <a href="https://solscan.io/tx/${tx.signature}" target="_blank" class="tx-link">View on Solscan →</a>
+                        </div>
+                        <div class="tx-amount">+${amount} $SKR</div>
+                        <div class="tx-address">To: ${recipient.substring(0, 8)}...${recipient.substring(recipient.length - 8)}</div>
+                    </div>
+                `;
+            }
+
+            txList.innerHTML = html;
+        }
+
+        function updateStats() {
+            const totalClaims = allTransactions.length;
+            const uniqueClaimers = uniqueAddresses.size;
+            
+            document.getElementById('totalClaims').textContent = totalClaims.toLocaleString();
+            document.getElementById('uniqueClaimers').textContent = uniqueClaimers.toLocaleString();
+            document.getElementById('totalAmount').textContent = 'Calculating...';
+            
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+
+            const estimatedTotal = 1000000;
+            const progress = Math.min((totalClaims / estimatedTotal) * 100, 100);
+            
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress.toFixed(2) + '%';
+            document.getElementById('progressInfo').textContent = 
+                `${totalClaims.toLocaleString()} claims processed`;
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return `${seconds}s ago`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="error">${message}</div>`;
+            setTimeout(() => {
+                errorContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        loadAllTransactions();
+        setInterval(loadAllTransactions, 10000);
     </script>
 </body>
 </html>
