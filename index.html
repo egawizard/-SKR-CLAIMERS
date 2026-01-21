@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$SKR Airdrop Claim Progress</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00f5ff, #9945ff, #ff1cf7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #8a8a8a;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .token-info {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1s ease 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .token-address {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .address-label {
+            color: #9945ff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .address-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #00f5ff;
+            background: rgba(0, 245, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 8px;
+            word-break: break-all;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(153, 69, 255, 0.1), rgba(0, 245, 255, 0.05));
+            border: 1px solid rgba(153, 69, 255, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease both;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(153, 69, 255, 0.6);
+            box-shadow: 0 10px 30px rgba(153, 69, 255, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #8a8a8a;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f5ff, #9945ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .stat-subtext {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .progress-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1s ease 0.5s both;
+        }
+
+        .progress-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .progress-bar-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50px;
+            height: 50px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 20px;
+            border: 2px solid rgba(153, 69, 255, 0.3);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #9945ff, #00f5ff, #ff1cf7);
+            border-radius: 50px;
+            transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+
+        .pool-list {
+            margin-top: 40px;
+        }
+
+        .pool-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .pool-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(153, 69, 255, 0.4);
+        }
+
+        .pool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pool-name {
+            font-weight: 600;
+            color: #00f5ff;
+            font-size: 0.9rem;
+        }
+
+        .pool-stats {
+            color: #9945ff;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .pool-address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: #666;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+
+        .pool-balance {
+            font-size: 0.75rem;
+            color: #8a8a8a;
+            margin-top: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(153, 69, 255, 0.2);
+            border-top: 3px solid #9945ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .creator-link {
+            color: #9945ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .creator-link:hover {
+            color: #00f5ff;
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #9945ff, #00f5ff);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(153, 69, 255, 0.4);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .last-update {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 15px;
+        }
+
+        .error-message {
+            background: rgba(255, 28, 247, 0.1);
+            border: 1px solid rgba(255, 28, 247, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ff1cf7;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
+            }
+
+            .progress-section {
+                padding: 25px;
+            }
+
+            .address-value {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">$SKR AIRDROP</div>
+            <div class="subtitle">Real-Time Claim Progress Tracker</div>
+        </header>
+
+        <div class="token-info">
+            <div class="token-address">
+                <span class="address-label">Token Contract:</span>
+                <span class="address-value">SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-value" id="totalClaims">-</div>
+                <div class="stat-subtext">Across all pools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Pools</div>
+                <div class="stat-value">4</div>
+                <div class="stat-subtext">Airdrop contracts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Balance</div>
+                <div class="stat-value" id="totalBalance">-</div>
+                <div class="stat-subtext">SOL in pools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Status</div>
+                <div class="stat-value" style="font-size: 1.5rem;" id="statusText">LIVE</div>
+                <div class="stat-subtext">Blockchain data</div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h2 class="progress-header">Claim Activity Progress</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+
+            <button class="refresh-btn" id="refreshBtn" onclick="fetchClaimData()">Refresh Data</button>
+            <div class="last-update" id="lastUpdate"></div>
+
+            <div class="pool-list" id="poolList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Connecting to Solana blockchain...
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">Powered by Solana Blockchain</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+    <script>
+        const POOL_ADDRESSES = [
+            '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
+            'CYPdPHMh1mD6ioFFVva7L2rFeKLBpcefVv5yv1p6iRqB',
+            '97KS7T6e5KV9iVEGkxkKPNU6CbF7Eeei7dQ498xtSQx3',
+            '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
+        ];
+
+        const RPC_ENDPOINTS = [
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
+        ];
+
+        let currentEndpoint = 0;
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        async function rpcCall(method, params) {
+            for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+                try {
+                    const endpoint = RPC_ENDPOINTS[(currentEndpoint + i) % RPC_ENDPOINTS.length];
+                    const response = await axios.post(endpoint, {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: method,
+                        params: params
+                    }, {
+                        timeout: 10000,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.data && response.data.result !== undefined) {
+                        currentEndpoint = (currentEndpoint + i) % RPC_ENDPOINTS.length;
+                        return response.data;
+                    }
+                } catch (error) {
+                    console.log(`Endpoint ${i} failed, trying next...`);
+                    if (i === RPC_ENDPOINTS.length - 1) {
+                        throw error;
+                    }
+                }
+            }
+        }
+
+        async function getAccountInfo(address) {
+            try {
+                const data = await rpcCall('getAccountInfo', [
+                    address,
+                    { encoding: 'jsonParsed' }
+                ]);
+                return data.result;
+            } catch (error) {
+                console.error('Error fetching account info:', error);
+                return null;
+            }
+        }
+
+        async function getSignaturesForAddress(address, limit = 1000) {
+            try {
+                const data = await rpcCall('getSignaturesForAddress', [
+                    address,
+                    { limit: limit }
+                ]);
+                return data.result || [];
+            } catch (error) {
+                console.error('Error fetching signatures:', error);
+                return [];
+            }
+        }
+
+        async function fetchPoolData(poolAddress, index) {
+            try {
+                const [accountInfo, signatures] = await Promise.all([
+                    getAccountInfo(poolAddress),
+                    getSignaturesForAddress(poolAddress, 1000)
+                ]);
+
+                let balance = 0;
+                if (accountInfo && accountInfo.value) {
+                    balance = (accountInfo.value.lamports / 1e9);
+                }
+
+                const txCount = signatures.length;
+
+                return {
+                    address: poolAddress,
+                    transactions: txCount,
+                    balance: balance.toFixed(4),
+                    index: index
+                };
+            } catch (error) {
+                console.error(`Error fetching pool ${poolAddress}:`, error);
+                return {
+                    address: poolAddress,
+                    transactions: 0,
+                    balance: '0.0000',
+                    index: index,
+                    error: true
+                };
+            }
+        }
+
+        async function fetchClaimData() {
+            const poolList = document.getElementById('poolList');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const statusText = document.getElementById('statusText');
+            
+            refreshBtn.disabled = true;
+            statusText.textContent = 'LOADING';
+            poolList.innerHTML = '<div class="loading"><div class="spinner"></div>Fetching blockchain data...</div>';
+
+            try {
+                const poolsData = await Promise.all(
+                    POOL_ADDRESSES.map((addr, idx) => fetchPoolData(addr, idx))
+                );
+
+                const totalTransactions = poolsData.reduce((sum, pool) => sum + pool.transactions, 0);
+                const totalBalanceSOL = poolsData.reduce((sum, pool) => sum + parseFloat(pool.balance), 0);
+                
+                const hasErrors = poolsData.some(pool => pool.error);
+                
+                const maxTransactions = Math.max(totalTransactions * 1.2, 5000);
+                const completionPercentage = Math.min(((totalTransactions / maxTransactions) * 100), 99).toFixed(1);
+
+                document.getElementById('totalClaims').textContent = totalTransactions.toLocaleString();
+                document.getElementById('totalBalance').textContent = totalBalanceSOL.toFixed(2) + ' SOL';
+                
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                
+                setTimeout(() => {
+                    progressBar.style.width = completionPercentage + '%';
+                    progressText.textContent = completionPercentage + '%';
+                }, 100);
+
+                poolsData.sort((a, b) => b.transactions - a.transactions);
+
+                poolList.innerHTML = poolsData.map((pool, index) => `
+                    <div class="pool-item" style="animation: fadeInUp 0.5s ease ${index * 0.1}s both">
+                        <div class="pool-header">
+                            <span class="pool-name">Pool #${pool.index + 1} ${pool.error ? '⚠️' : '✓'}</span>
+                            <span class="pool-stats">${pool.transactions.toLocaleString()} Transactions</span>
+                        </div>
+                        <div class="pool-address">${pool.address}</div>
+                        <div class="pool-balance">Balance: ${pool.balance} SOL</div>
+                    </div>
+                `).join('');
+
+                const now = new Date();
+                document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                statusText.textContent = hasErrors ? 'PARTIAL' : 'LIVE';
+
+            } catch (error) {
+                console.error('Error:', error);
+                poolList.innerHTML = `
+                    <div class="error-message">
+                        ⚠️ Unable to fetch data from blockchain. This might be due to RPC rate limits. 
+                        Please try again in a moment.
+                    </div>
+                `;
+                statusText.textContent = 'ERROR';
+            } finally {
+                refreshBtn.disabled = false;
+            }
+        }
+
+        createStars();
+        fetchClaimData();
+        
+        setInterval(fetchClaimData, 120000);
+    </script>
+</body>
+</html>
