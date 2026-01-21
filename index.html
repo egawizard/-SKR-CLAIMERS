@@ -5,869 +5,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>$SKR Airdrop Claim Progress</title>
     <style>
-        * {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #ffffff;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
-            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             min-height: 100vh;
             overflow-x: hidden;
         }
-
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 3s infinite;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            position: relative;
-            z-index: 1;
-        }
-
         header {
             text-align: center;
-            margin-bottom: 60px;
-            animation: fadeInDown 0.8s ease;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo {
-            font-size: 3.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #00f5ff, #9945ff, #ff1cf7);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            color: #8a8a8a;
-            font-weight: 300;
-            letter-spacing: 1px;
-        }
-
-        .token-info {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            margin: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
             backdrop-filter: blur(10px);
-            animation: fadeIn 1s ease 0.3s both;
         }
-
+        h1 {
+            font-size: 3em;
+            margin: 0;
+            text-shadow: 0 0 10px #ffffff;
+        }
+        .progress-container {
+            width: 80%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            overflow: hidden;
+            margin: 20px auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .progress-bar {
+            height: 30px;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            width: 0;
+            transition: width 0.5s ease-in-out;
+            border-radius: 50px;
+        }
+        #progress-text {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+        .tx-section {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        a {
+            color: #feb47b;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8em;
+            color: #cccccc;
+        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
-        .token-address {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .address-label {
-            color: #9945ff;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .address-value {
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            color: #00f5ff;
-            background: rgba(0, 245, 255, 0.1);
-            padding: 8px 15px;
-            border-radius: 8px;
-            word-break: break-all;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, rgba(153, 69, 255, 0.1), rgba(0, 245, 255, 0.05));
-            border: 1px solid rgba(153, 69, 255, 0.3);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.8s ease both;
-        }
-
-        .stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .stat-card:nth-child(3) { animation-delay: 0.3s; }
-        .stat-card:nth-child(4) { animation-delay: 0.4s; }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(153, 69, 255, 0.6);
-            box-shadow: 0 10px 30px rgba(153, 69, 255, 0.3);
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: #8a8a8a;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00f5ff, #9945ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-        }
-
-        .stat-subtext {
-            font-size: 0.75rem;
-            color: #666;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-
-        .progress-section {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 1s ease 0.5s both;
-        }
-
-        .progress-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 30px;
-            text-align: center;
-            color: #fff;
-        }
-
-        .progress-bar-container {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 50px;
-            height: 50px;
-            overflow: hidden;
-            position: relative;
-            margin-bottom: 20px;
-            border: 2px solid rgba(153, 69, 255, 0.3);
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #9945ff, #00f5ff, #ff1cf7);
-            border-radius: 50px;
-            transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #fff;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            z-index: 2;
-        }
-
-        .pool-list {
-            margin-top: 40px;
-        }
-
-        .pool-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .pool-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(153, 69, 255, 0.4);
-        }
-
-        .pool-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .pool-name {
-            font-weight: 600;
-            color: #00f5ff;
-            font-size: 0.9rem;
-        }
-
-        .pool-stats {
-            color: #9945ff;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .pool-address {
-            font-family: 'Courier New', monospace;
-            font-size: 0.7rem;
-            color: #666;
-            word-break: break-all;
-            margin-top: 5px;
-        }
-
-        .pool-balance {
-            font-size: 0.75rem;
-            color: #8a8a8a;
-            margin-top: 8px;
-        }
-
-        .live-transactions {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 1s ease 0.6s both;
-        }
-
-        .tx-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .tx-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .live-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #00ff00;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .pulse-dot {
-            width: 10px;
-            height: 10px;
-            background: #00ff00;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-
-        .tx-list {
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .tx-list::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .tx-list::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .tx-list::-webkit-scrollbar-thumb {
-            background: rgba(153, 69, 255, 0.5);
-            border-radius: 10px;
-        }
-
-        .tx-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .tx-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(0, 245, 255, 0.4);
-            transform: translateX(5px);
-        }
-
-        .tx-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .tx-signature {
-            font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
-            color: #00f5ff;
-        }
-
-        .tx-link {
-            color: #00f5ff;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-        }
-
-        .tx-link:hover {
-            color: #9945ff;
-            text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
-        }
-
-        .tx-amount {
-            color: #9945ff;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .tx-time {
-            color: #666;
-            font-size: 0.7rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .spinner {
-            border: 3px solid rgba(153, 69, 255, 0.2);
-            border-top: 3px solid #9945ff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 60px;
-            padding: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .creator-link {
-            color: #9945ff;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-        }
-
-        .creator-link:hover {
-            color: #00f5ff;
-            text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
-        }
-
-        .refresh-btn {
-            background: linear-gradient(135deg, #9945ff, #00f5ff);
-            border: none;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 20px auto;
-            display: block;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .refresh-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(153, 69, 255, 0.4);
-        }
-
-        .refresh-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .last-update {
-            text-align: center;
-            color: #666;
-            font-size: 0.8rem;
-            margin-top: 15px;
-        }
-
-        .info-message {
-            background: rgba(0, 245, 255, 0.1);
-            border: 1px solid rgba(0, 245, 255, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-            color: #00f5ff;
-            font-size: 0.85rem;
-            text-align: center;
-        }
-
-        @media (max-width: 1200px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .logo {
-                font-size: 2.5rem;
-            }
-
-            .stat-value {
-                font-size: 1.8rem;
-            }
-
-            .progress-section, .live-transactions {
-                padding: 25px;
-            }
-
-            .address-value {
-                font-size: 0.7rem;
-            }
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
         }
     </style>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 </head>
 <body>
-    <div class="stars" id="stars"></div>
-    
-    <div class="container">
-        <header>
-            <div class="logo">$SKR AIRDROP</div>
-            <div class="subtitle">Real-Time Claim Progress Tracker</div>
-        </header>
+    <header>
+        <h1>$SKR Airdrop Claim Progress</h1>
+        <p>Real-time tracking of $SKR token claims on Solana Mainnet</p>
+    </header>
 
-        <div class="token-info">
-            <div class="token-address">
-                <span class="address-label">Token Contract:</span>
-                <span class="address-value">SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3</span>
-            </div>
-        </div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <p id="progress-text">Loading progress...</p>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Claims</div>
-                <div class="stat-value" id="totalClaims">-</div>
-                <div class="stat-subtext">Airdrop recipients</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">$SKR Claimed</div>
-                <div class="stat-value" id="totalClaimed">-</div>
-                <div class="stat-subtext">Tokens distributed</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Active Pools</div>
-                <div class="stat-value">4</div>
-                <div class="stat-subtext">Distribution pools</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Status</div>
-                <div class="stat-value" style="font-size: 1.5rem;" id="statusText">LIVE</div>
-                <div class="stat-subtext">Blockchain data</div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="progress-section">
-                <h2 class="progress-header">Claim Distribution Progress</h2>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-                    <div class="progress-text" id="progressText">0%</div>
-                </div>
-
-                <button class="refresh-btn" id="refreshBtn" onclick="fetchClaimData()">Refresh Data</button>
-                <div class="last-update" id="lastUpdate"></div>
-
-                <div class="pool-list" id="poolList">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        Loading airdrop data...
-                    </div>
-                </div>
-            </div>
-
-            <div class="live-transactions">
-                <div class="tx-header">
-                    <h2 class="tx-title">Live Transactions</h2>
-                    <div class="live-indicator">
-                        <div class="pulse-dot"></div>
-                        LIVE
-                    </div>
-                </div>
-                <div class="tx-list" id="txList">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        Loading transactions...
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
-            <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">Powered by Solana Blockchain</p>
-        </footer>
+    <div class="tx-section fade-in">
+        <h2>Live Recent Transactions</h2>
+        <table id="tx-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Signature (Link)</th>
+                    <th>Pool</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
+    <footer>
+        Created by <a href="https://x.com/ega_2ez4crypto" target="_blank">@ega_2ez4crypto</a>
+    </footer>
+
     <script>
-        const TOKEN_MINT = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
-        
-        const POOL_ADDRESSES = [
+        const solana = new SolanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        const tokenMint = new SolanaWeb3.PublicKey('SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3');
+        const pools = [
             '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
             'CYPdPHMh1mD6ioFFVva7L2rFeKLBpcefVv5yv1p6iRqB',
             '97KS7T6e5KV9iVEGkxkKPNU6CbF7Eeei7dQ498xtSQx3',
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
-        ];
+        ].map(addr => new SolanaWeb3.PublicKey(addr));
 
-        const AIRDROP_AMOUNTS = [5000, 10000, 40000, 125000, 750000];
+        const totalAirdrop = 1960785000; // Total initial airdrop allocation from sources
 
-        let claimData = {
-            totalClaims: 15234,
-            totalTokens: 758450000,
-            pools: [
-                { claims: 4521, tokens: 225670000 },
-                { claims: 3892, tokens: 194350000 },
-                { claims: 3615, tokens: 180120000 },
-                { claims: 3206, tokens: 158310000 }
-            ]
-        };
-
-        let allTransactions = [];
-        let isLoading = false;
-
-        function createStars() {
-            const starsContainer = document.getElementById('stars');
-            for (let i = 0; i < 100; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                starsContainer.appendChild(star);
+        async function getTokenBalance(account) {
+            try {
+                const balance = await solana.getTokenAccountBalance(account);
+                return balance.value.uiAmount;
+            } catch (e) {
+                console.error('Error fetching balance:', e);
+                return 0;
             }
         }
 
-        function formatNumber(num) {
-            if (num >= 1000000000) {
-                return (num / 1000000000).toFixed(2) + 'B';
-            } else if (num >= 1000000) {
-                return (num / 1000000).toFixed(2) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(2) + 'K';
+        async function updateProgress() {
+            let totalBalance = 0;
+            for (const pool of pools) {
+                const balance = await getTokenBalance(pool);
+                totalBalance += balance;
             }
-            return num.toLocaleString();
+            const claimed = totalAirdrop - totalBalance;
+            const progress = (claimed / totalAirdrop) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `${claimed.toLocaleString()} $SKR claimed (${progress.toFixed(2)}%)`;
         }
 
-        function formatTime(timestamp) {
-            const now = Date.now() / 1000;
-            const diff = now - timestamp;
-            
-            if (diff < 60) return 'Just now';
-            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-            return `${Math.floor(diff / 86400)}d ago`;
-        }
-
-        function truncateSignature(sig) {
-            return `${sig.slice(0, 8)}...${sig.slice(-8)}`;
-        }
-
-        function generateMockTransactions(count = 20) {
-            const now = Math.floor(Date.now() / 1000);
-            const txs = [];
-            
-            for (let i = 0; i < count; i++) {
-                const randomPool = POOL_ADDRESSES[Math.floor(Math.random() * POOL_ADDRESSES.length)];
-                const randomAmount = AIRDROP_AMOUNTS[Math.floor(Math.random() * AIRDROP_AMOUNTS.length)];
-                const randomSig = Array.from({length: 88}, () => 
-                    '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'[Math.floor(Math.random() * 58)]
-                ).join('');
-                
-                txs.push({
-                    signature: randomSig,
-                    timestamp: now - (i * 120) - Math.floor(Math.random() * 300),
-                    pool: randomPool,
-                    amount: randomAmount
-                });
-            }
-            
-            return txs;
-        }
-
-        function simulateNewTransaction() {
-            const now = Math.floor(Date.now() / 1000);
-            const randomPool = POOL_ADDRESSES[Math.floor(Math.random() * POOL_ADDRESSES.length)];
-            const randomAmount = AIRDROP_AMOUNTS[Math.floor(Math.random() * AIRDROP_AMOUNTS.length)];
-            const randomSig = Array.from({length: 88}, () => 
-                '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'[Math.floor(Math.random() * 58)]
-            ).join('');
-            
-            return {
-                signature: randomSig,
-                timestamp: now,
-                pool: randomPool,
-                amount: randomAmount
-            };
-        }
-
-        function renderTransactions(transactions) {
-            const txList = document.getElementById('txList');
-            
-            if (transactions.length === 0) {
-                txList.innerHTML = '<div class="info-message">Waiting for new transactions...</div>';
-                return;
-            }
-
-            const sortedTx = transactions.sort((a, b) => b.timestamp - a.timestamp).slice(0, 20);
-            
-            txList.innerHTML = sortedTx.map(tx => `
-                <div class="tx-item">
-                    <div class="tx-row">
-                        <span class="tx-signature">${truncateSignature(tx.signature)}</span>
-                        <span class="tx-amount">+${formatNumber(tx.amount)} $SKR</span>
-                    </div>
-                    <div class="tx-row">
-                        <a href="https://solscan.io/tx/${tx.signature}" target="_blank" class="tx-link">
-                            View on Solscan →
-                        </a>
-                        <span class="tx-time">${formatTime(tx.timestamp)}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateLiveTransactions() {
-            if (allTransactions.length === 0) {
-                allTransactions = generateMockTransactions(20);
-            } else {
-                if (Math.random() > 0.3) {
-                    const newTx = simulateNewTransaction();
-                    allTransactions.unshift(newTx);
-                    allTransactions = allTransactions.slice(0, 50);
-                    
-                    const poolIndex = POOL_ADDRESSES.indexOf(newTx.pool);
-                    if (poolIndex !== -1) {
-                        claimData.pools[poolIndex].claims++;
-                        claimData.pools[poolIndex].tokens += newTx.amount;
-                        claimData.totalClaims++;
-                        claimData.totalTokens += newTx.amount;
-                    }
+        async function getRecentTransactions() {
+            let allTx = [];
+            for (const pool of pools) {
+                try {
+                    const signatures = await solana.getSignaturesForAddress(pool, { limit: 10 });
+                    signatures.forEach(sig => {
+                        sig.pool = pool.toBase58();
+                        allTx.push(sig);
+                    });
+                } catch (e) {
+                    console.error('Error fetching tx for pool:', pool, e);
                 }
             }
-            
-            renderTransactions(allTransactions);
+            allTx.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
+            const uniqueTx = allTx.slice(0, 20); // Top 20 recent
+
+            const tbody = document.querySelector('#tx-table tbody');
+            tbody.innerHTML = '';
+            uniqueTx.forEach(tx => {
+                const row = document.createElement('tr');
+                const time = tx.blockTime ? new Date(tx.blockTime * 1000).toLocaleString() : 'N/A';
+                const sigLink = `<a href="https://solscan.io/tx/${tx.signature}" target="_blank">${tx.signature.slice(0, 10)}...</a>`;
+                const status = tx.err ? 'Failed' : 'Success';
+                row.innerHTML = `<td>${time}</td><td>${sigLink}</td><td>${tx.pool.slice(0, 10)}...</td><td>${status}</td>`;
+                tbody.appendChild(row);
+            });
         }
 
-        function updateClaimData() {
-            const increment = Math.floor(Math.random() * 8) + 2;
-            claimData.totalClaims += increment;
-            
-            for (let i = 0; i < claimData.pools.length; i++) {
-                const poolIncrement = Math.floor(Math.random() * 3) + 1;
-                const randomAmount = AIRDROP_AMOUNTS[Math.floor(Math.random() * AIRDROP_AMOUNTS.length)];
-                claimData.pools[i].claims += poolIncrement;
-                claimData.pools[i].tokens += poolIncrement * randomAmount;
-                claimData.totalTokens += poolIncrement * randomAmount;
-            }
+        async function updateData() {
+            await updateProgress();
+            await getRecentTransactions();
         }
 
-        function fetchClaimData() {
-            if (isLoading) return;
-            
-            const poolList = document.getElementById('poolList');
-            const refreshBtn = document.getElementById('refreshBtn');
-            const statusText = document.getElementById('statusText');
-            
-            isLoading = true;
-            refreshBtn.disabled = true;
-            statusText.textContent = 'UPDATING';
-
-            setTimeout(() => {
-                updateClaimData();
-
-                const totalClaims = claimData.totalClaims;
-                const totalTokens = claimData.totalTokens;
-                const estimatedMaxClaims = 50000;
-                const completionPercentage = Math.min(((totalClaims / estimatedMaxClaims) * 100), 95).toFixed(1);
-
-                document.getElementById('totalClaims').textContent = totalClaims.toLocaleString();
-                document.getElementById('totalClaimed').textContent = formatNumber(totalTokens);
-                
-                const progressBar = document.getElementById('progressBar');
-                const progressText = document.getElementById('progressText');
-                
-                setTimeout(() => {
-                    progressBar.style.width = completionPercentage + '%';
-                    progressText.textContent = completionPercentage + '%';
-                }, 100);
-
-                const sortedPools = [...claimData.pools].sort((a, b) => b.claims - a.claims);
-                
-                poolList.innerHTML = sortedPools.map((pool, i) => {
-                    const originalIndex = claimData.pools.indexOf(pool);
-                    return `
-                        <div class="pool-item" style="animation: fadeInUp 0.5s ease ${i * 0.1}s both">
-                            <div class="pool-header">
-                                <span class="pool-name">Pool #${originalIndex + 1} ✓</span>
-                                <span class="pool-stats">${pool.claims.toLocaleString()} Claims</span>
-                            </div>
-                            <div class="pool-address">${POOL_ADDRESSES[originalIndex]}</div>
-                            <div class="pool-balance">$SKR Distributed: ${formatNumber(pool.tokens)}</div>
-                        </div>
-                    `;
-                }).join('');
-
-                const now = new Date();
-                document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
-                statusText.textContent = 'LIVE';
-                isLoading = false;
-                refreshBtn.disabled = false;
-            }, 1000);
-        }
-
-        createStars();
-        
-        setTimeout(() => {
-            fetchClaimData();
-            updateLiveTransactions();
-        }, 500);
-        
-        setInterval(() => {
-            if (!isLoading) {
-                fetchClaimData();
-            }
-        }, 120000);
-        
-        setInterval(() => {
-            updateLiveTransactions();
-        }, 20000);
+        updateData();
+        setInterval(updateData, 30000); // Update every 30 seconds
     </script>
 </body>
 </html>
