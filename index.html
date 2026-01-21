@@ -232,11 +232,21 @@
         }
 
         .error {
-            background: rgba(255, 0, 0, 0.2);
+            background: rgba(255, 100, 100, 0.3);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 100, 100, 0.5);
+            font-size: 0.9em;
+        }
+
+        .success {
+            background: rgba(100, 255, 100, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(100, 255, 100, 0.5);
+            font-size: 0.9em;
         }
 
         ::-webkit-scrollbar {
@@ -255,6 +265,28 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(79, 172, 254, 0.8);
+        }
+
+        .pool-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pool-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85em;
+        }
+
+        .pool-card.success {
+            border-left: 3px solid #4ade80;
+        }
+
+        .pool-card.error {
+            border-left: 3px solid #f87171;
         }
     </style>
 </head>
@@ -295,6 +327,7 @@
                 </div>
             </div>
             <p style="text-align: center; opacity: 0.8;" id="progressInfo">Loading data...</p>
+            <div id="poolStatus" class="pool-status"></div>
         </div>
 
         <div class="transactions-section">
@@ -305,7 +338,7 @@
                     <span>LIVE</span>
                 </div>
             </div>
-            <div id="errorContainer"></div>
+            <div id="statusContainer"></div>
             <div id="txList" class="tx-list">
                 <div class="loading">Loading transactions...</div>
             </div>
@@ -313,7 +346,7 @@
 
         <div class="footer">
             <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
-            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">Data updates every 10 seconds</p>
+            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">Data updates every 15 seconds</p>
         </div>
     </div>
 
@@ -326,56 +359,101 @@
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
         ];
 
+        const RPC_ENDPOINTS = [
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
+        ];
+
         let allTransactions = [];
         let uniqueAddresses = new Set();
+        let totalAmountClaimed = 0;
+        let currentRpcIndex = 0;
+        let poolStatuses = {};
+
+        async function fetchWithRetry(endpoint, body, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error.message || 'RPC Error');
+                    }
+
+                    return data;
+                } catch (err) {
+                    console.log(`Attempt ${i + 1} failed:`, err.message);
+                    if (i === retries - 1) throw err;
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                }
+            }
+        }
+
+        async function getCurrentRpcEndpoint() {
+            const endpoint = RPC_ENDPOINTS[currentRpcIndex];
+            currentRpcIndex = (currentRpcIndex + 1) % RPC_ENDPOINTS.length;
+            return endpoint;
+        }
 
         async function fetchPoolTransactions(poolAddress) {
             try {
-                const response = await fetch('https://api.mainnet-beta.solana.com', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        jsonrpc: '2.0',
-                        id: 1,
-                        method: 'getSignaturesForAddress',
-                        params: [
-                            poolAddress,
-                            { limit: 20 }
-                        ]
-                    })
+                const endpoint = await getCurrentRpcEndpoint();
+                
+                const data = await fetchWithRetry(endpoint, {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'getSignaturesForAddress',
+                    params: [
+                        poolAddress,
+                        { limit: 50 }
+                    ]
                 });
 
-                const data = await response.json();
                 if (data.result) {
+                    poolStatuses[poolAddress] = 'success';
                     return data.result.map(tx => ({
                         ...tx,
                         poolAddress: poolAddress
                     }));
                 }
+                poolStatuses[poolAddress] = 'error';
                 return [];
             } catch (err) {
                 console.error(`Error fetching from pool ${poolAddress}:`, err);
+                poolStatuses[poolAddress] = 'error';
                 return [];
             }
         }
 
         async function fetchTransactionDetails(signature) {
             try {
-                const response = await fetch('https://api.mainnet-beta.solana.com', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        jsonrpc: '2.0',
-                        id: 1,
-                        method: 'getTransaction',
-                        params: [
-                            signature,
-                            { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }
-                        ]
-                    })
+                const endpoint = await getCurrentRpcEndpoint();
+                
+                const data = await fetchWithRetry(endpoint, {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'getTransaction',
+                    params: [
+                        signature,
+                        { 
+                            encoding: 'jsonParsed',
+                            maxSupportedTransactionVersion: 0
+                        }
+                    ]
                 });
 
-                const data = await response.json();
                 return data.result;
             } catch (err) {
                 console.error('Error fetching transaction details:', err);
@@ -385,66 +463,101 @@
 
         async function loadAllTransactions() {
             try {
-                document.getElementById('errorContainer').innerHTML = '';
+                showStatus('Fetching data from Solana blockchain...', 'info');
                 
                 const promises = POOL_ADDRESSES.map(addr => fetchPoolTransactions(addr));
                 const results = await Promise.all(promises);
                 
                 const combinedTxs = results.flat();
-                const uniqueTxs = [...new Map(combinedTxs.map(tx => [tx.signature, tx])).values()];
                 
+                if (combinedTxs.length === 0) {
+                    showStatus('No transactions found. This might be due to RPC limits. Retrying...', 'error');
+                    updatePoolStatus();
+                    return;
+                }
+
+                const uniqueTxs = [...new Map(combinedTxs.map(tx => [tx.signature, tx])).values()];
                 uniqueTxs.sort((a, b) => b.blockTime - a.blockTime);
                 
-                allTransactions = uniqueTxs.slice(0, 50);
+                allTransactions = uniqueTxs.slice(0, 100);
+                
+                showStatus(`Successfully loaded ${allTransactions.length} transactions from ${Object.values(poolStatuses).filter(s => s === 'success').length} pools`, 'success');
                 
                 await displayTransactions();
                 updateStats();
+                updatePoolStatus();
                 
             } catch (err) {
                 console.error('Error loading transactions:', err);
-                showError('Failed to load transaction data. Retrying...');
+                showStatus('Failed to load transaction data. Retrying with different RPC...', 'error');
+                updatePoolStatus();
             }
+        }
+
+        function updatePoolStatus() {
+            const poolStatus = document.getElementById('poolStatus');
+            let html = '';
+            
+            POOL_ADDRESSES.forEach((addr, idx) => {
+                const status = poolStatuses[addr] || 'loading';
+                const shortAddr = addr.substring(0, 8) + '...' + addr.substring(addr.length - 8);
+                html += `
+                    <div class="pool-card ${status}">
+                        <strong>Pool ${idx + 1}</strong><br>
+                        ${shortAddr}<br>
+                        Status: ${status === 'success' ? '✓ Connected' : status === 'error' ? '✗ Error' : '⟳ Loading'}
+                    </div>
+                `;
+            });
+            
+            poolStatus.innerHTML = html;
         }
 
         async function displayTransactions() {
             const txList = document.getElementById('txList');
             
             if (allTransactions.length === 0) {
-                txList.innerHTML = '<div class="loading">No transactions found yet...</div>';
+                txList.innerHTML = '<div class="loading">No transactions found yet. Waiting for claims...</div>';
                 return;
             }
 
             let html = '';
+            const processedTxs = allTransactions.slice(0, 30);
             
-            for (const tx of allTransactions.slice(0, 20)) {
+            for (const tx of processedTxs) {
                 const details = await fetchTransactionDetails(tx.signature);
-                let amount = 'Unknown';
+                let amount = 'Processing';
                 let recipient = 'Unknown';
 
-                if (details && details.meta && details.meta.postTokenBalances) {
-                    const tokenTransfer = details.meta.postTokenBalances.find(
-                        balance => balance.mint === TOKEN_CA
-                    );
-                    
-                    if (tokenTransfer && details.meta.preTokenBalances) {
-                        const preBalance = details.meta.preTokenBalances.find(
-                            b => b.accountIndex === tokenTransfer.accountIndex
-                        );
-                        
-                        if (preBalance) {
-                            const diff = tokenTransfer.uiTokenAmount.uiAmount - preBalance.uiTokenAmount.uiAmount;
-                            if (diff > 0) {
-                                amount = diff.toLocaleString('en-US', { maximumFractionDigits: 2 });
+                if (details) {
+                    try {
+                        if (details.meta && details.meta.postTokenBalances && details.meta.preTokenBalances) {
+                            for (const postBalance of details.meta.postTokenBalances) {
+                                if (postBalance.mint === TOKEN_CA) {
+                                    const preBalance = details.meta.preTokenBalances.find(
+                                        b => b.accountIndex === postBalance.accountIndex
+                                    );
+                                    
+                                    if (preBalance) {
+                                        const diff = postBalance.uiTokenAmount.uiAmount - preBalance.uiTokenAmount.uiAmount;
+                                        if (diff > 0) {
+                                            amount = diff.toLocaleString('en-US', { maximumFractionDigits: 2 });
+                                            totalAmountClaimed += diff;
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
 
-                    if (details.transaction && details.transaction.message && details.transaction.message.accountKeys) {
-                        const accounts = details.transaction.message.accountKeys;
-                        if (accounts.length > 1) {
-                            recipient = accounts[1].pubkey || 'Unknown';
-                            uniqueAddresses.add(recipient);
+                        if (details.transaction && details.transaction.message && details.transaction.message.accountKeys) {
+                            const accounts = details.transaction.message.accountKeys;
+                            if (accounts.length > 1) {
+                                recipient = accounts[1].pubkey || 'Unknown';
+                                uniqueAddresses.add(recipient);
+                            }
                         }
+                    } catch (err) {
+                        console.error('Error parsing transaction:', err);
                     }
                 }
 
@@ -472,18 +585,21 @@
             
             document.getElementById('totalClaims').textContent = totalClaims.toLocaleString();
             document.getElementById('uniqueClaimers').textContent = uniqueClaimers.toLocaleString();
-            document.getElementById('totalAmount').textContent = 'Calculating...';
+            document.getElementById('totalAmount').textContent = 
+                totalAmountClaimed > 0 
+                    ? totalAmountClaimed.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' $SKR'
+                    : 'Calculating...';
             
             const now = new Date();
             document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
 
-            const estimatedTotal = 1000000;
+            const estimatedTotal = 10000;
             const progress = Math.min((totalClaims / estimatedTotal) * 100, 100);
             
             document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('progressText').textContent = progress.toFixed(2) + '%';
             document.getElementById('progressInfo').textContent = 
-                `${totalClaims.toLocaleString()} claims processed`;
+                `${totalClaims.toLocaleString()} claims processed from ${Object.values(poolStatuses).filter(s => s === 'success').length} active pools`;
         }
 
         function getTimeAgo(date) {
@@ -495,16 +611,23 @@
             return `${Math.floor(seconds / 86400)}d ago`;
         }
 
-        function showError(message) {
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.innerHTML = `<div class="error">${message}</div>`;
-            setTimeout(() => {
-                errorContainer.innerHTML = '';
-            }, 5000);
+        function showStatus(message, type) {
+            const statusContainer = document.getElementById('statusContainer');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'error';
+            statusContainer.innerHTML = `<div class="${className}">${message}</div>`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusContainer.innerHTML = '';
+                }, 5000);
+            }
         }
 
+        console.log('$SKR Airdrop Tracker initialized');
+        console.log('Monitoring pools:', POOL_ADDRESSES);
+        
         loadAllTransactions();
-        setInterval(loadAllTransactions, 10000);
+        setInterval(loadAllTransactions, 15000);
     </script>
 </body>
 </html>
