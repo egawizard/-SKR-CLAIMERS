@@ -482,7 +482,7 @@
                 Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a>
             </p>
             <p style="font-size: 0.9em; opacity: 0.7;">
-                Real-time data from Solana RPC • Updates every 20 seconds
+                Real-time data from Solana RPC • Updates every 30 seconds
             </p>
         </div>
     </div>
@@ -490,17 +490,15 @@
     <script>
         const TOKEN_CA = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
         const POOL_ADDRESSES = [
-            '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
-            'CYPdPHMh1mD6ioFFVva7L2rFeKLBpcefVv5yv1p6iRqB',
-            '97KS7T6e5KV9iVEGkxkKPNU6CbF7Eeei7dQ498xtSQx3',
-            '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
+            'mERKcfxMC5SqJn4Ld4BUris3WKZZ1ojjWJ3A3J5CKxv'
         ];
 
-        // Use public RPC endpoints
+        // Use public RPC endpoints with better reliability
         const RPC_ENDPOINTS = [
-            'https://go.getblock.io/d3c5e93c531b4539ae84330c28e7ff63',
-            'https://solana-mainnet.g.alchemy.com/v2/demo',
-            'https://api.mainnet-beta.solana.com'
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana',
+            'https://solana-mainnet.rpc.extrnode.com'
         ];
 
         let allTransactions = [];
@@ -520,53 +518,67 @@
             }, 10000);
         }
 
-        async function rpcCall(method, params) {
-            const endpoint = RPC_ENDPOINTS[currentEndpointIndex];
-            
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        jsonrpc: '2.0',
-                        id: 1,
-                        method: method,
-                        params: params
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
+        async function rpcCall(method, params, retries = 3) {
+            for (let attempt = 0; attempt < retries; attempt++) {
+                const endpoint = RPC_ENDPOINTS[currentEndpointIndex];
                 
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            id: 1,
+                            method: method,
+                            params: params
+                        })
+                    });
 
-                return data.result;
-            } catch (error) {
-                console.error(`RPC Error with ${endpoint}:`, error);
-                // Try next endpoint
-                currentEndpointIndex = (currentEndpointIndex + 1) % RPC_ENDPOINTS.length;
-                throw error;
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error.message);
+                    }
+
+                    return data.result;
+                } catch (error) {
+                    console.error(`Attempt ${attempt + 1} failed with ${endpoint}:`, error.message);
+                    
+                    // Try next endpoint
+                    currentEndpointIndex = (currentEndpointIndex + 1) % RPC_ENDPOINTS.length;
+                    
+                    if (attempt === retries - 1) {
+                        throw error;
+                    }
+                    
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+                }
             }
         }
 
         async function fetchPoolTransactions(poolAddress) {
             try {
+                showAlert(`🔍 Fetching from pool: ${poolAddress.substring(0, 8)}...`, 'info');
+                
                 const signatures = await rpcCall('getSignaturesForAddress', [
                     poolAddress,
-                    { limit: 20 }
+                    { limit: 50 }
                 ]);
 
                 if (!signatures || signatures.length === 0) {
+                    showAlert(`⚠️ No transactions found in pool ${poolAddress.substring(0, 8)}...`, 'error');
                     return [];
                 }
 
+                showAlert(`✅ Found ${signatures.length} signatures from pool`, 'success');
+                
                 return signatures.map(sig => ({
                     signature: sig.signature,
                     blockTime: sig.blockTime,
@@ -576,6 +588,7 @@
                 }));
             } catch (error) {
                 console.error(`Failed to fetch from pool ${poolAddress}:`, error);
+                showAlert(`❌ Error fetching pool data: ${error.message}`, 'error');
                 return [];
             }
         }
@@ -643,7 +656,7 @@
 
         async function loadAllData() {
             try {
-                showAlert('🔄 Fetching transactions from Solana blockchain...', 'info');
+                showAlert('🔄 Connecting to Solana RPC...', 'info');
 
                 const poolPromises = POOL_ADDRESSES.map(addr => fetchPoolTransactions(addr));
                 const poolResults = await Promise.all(poolPromises);
@@ -651,7 +664,14 @@
                 const allSigs = poolResults.flat();
                 
                 if (allSigs.length === 0) {
-                    showAlert('⚠️ No transactions found. The pools might be inactive or RPC is rate-limiting.', 'error');
+                    showAlert('⚠️ No transactions found. Pool might be inactive or empty.', 'error');
+                    document.getElementById('txList').innerHTML = `
+                        <div class="loading">
+                            <p style="font-size: 1.2em; margin-bottom: 15px;">No transactions found</p>
+                            <p style="opacity: 0.7;">The pool address might be inactive or has no recent activity.</p>
+                            <p style="opacity: 0.7; margin-top: 10px;">Pool: ${POOL_ADDRESSES[0]}</p>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -663,49 +683,58 @@
                 uniqueAddresses.clear();
                 totalAmount = 0;
 
-                showAlert(`✅ Found ${uniqueSigs.length} transactions. Processing details...`, 'success');
+                showAlert(`✅ Processing ${uniqueSigs.length} transactions...`, 'success');
 
-                // Process transactions in batches
-                const batchSize = 10;
-                for (let i = 0; i < Math.min(uniqueSigs.length, 30); i += batchSize) {
+                // Process transactions in batches to avoid rate limiting
+                const batchSize = 5;
+                let processed = 0;
+                
+                for (let i = 0; i < Math.min(uniqueSigs.length, 50); i += batchSize) {
                     const batch = uniqueSigs.slice(i, i + batchSize);
-                    const detailPromises = batch.map(tx => fetchTransactionDetails(tx.signature));
-                    const details = await Promise.all(detailPromises);
+                    
+                    for (const tx of batch) {
+                        try {
+                            const detail = await fetchTransactionDetails(tx.signature);
+                            
+                            if (detail) {
+                                const amount = parseTransactionAmount(detail);
+                                const account = getAccountFromTransaction(detail);
 
-                    for (let j = 0; j < batch.length; j++) {
-                        const tx = batch[j];
-                        const detail = details[j];
+                                allTransactions.push({
+                                    signature: tx.signature,
+                                    blockTime: tx.blockTime,
+                                    amount: amount || 0,
+                                    account: account || 'Unknown',
+                                    poolAddress: tx.poolAddress
+                                });
 
-                        if (detail) {
-                            const amount = parseTransactionAmount(detail);
-                            const account = getAccountFromTransaction(detail);
-
-                            allTransactions.push({
-                                signature: tx.signature,
-                                blockTime: tx.blockTime,
-                                amount: amount || 0,
-                                account: account || 'Unknown',
-                                poolAddress: tx.poolAddress
-                            });
-
-                            if (account) {
-                                uniqueAddresses.add(account);
+                                if (account) {
+                                    uniqueAddresses.add(account);
+                                }
+                                if (amount) {
+                                    totalAmount += Math.abs(amount);
+                                }
+                                
+                                processed++;
                             }
-                            if (amount) {
-                                totalAmount += Math.abs(amount);
-                            }
+                        } catch (error) {
+                            console.error(`Error processing transaction:`, error);
                         }
+                        
+                        // Small delay between requests
+                        await new Promise(resolve => setTimeout(resolve, 200));
                     }
 
                     displayTransactions();
                     updateStats();
+                    showAlert(`📊 Processed ${processed} of ${Math.min(uniqueSigs.length, 50)} transactions...`, 'info');
                 }
 
-                showAlert(`✅ Successfully loaded ${allTransactions.length} transactions from blockchain`, 'success');
+                showAlert(`✅ Successfully loaded ${allTransactions.length} transactions!`, 'success');
 
             } catch (error) {
                 console.error('Error loading data:', error);
-                showAlert(`❌ Error: ${error.message}. Retrying with different RPC...`, 'error');
+                showAlert(`❌ Error: ${error.message}. Will retry in 30 seconds...`, 'error');
             }
         }
 
@@ -785,7 +814,7 @@
         console.log('Token:', TOKEN_CA);
 
         loadAllData();
-        setInterval(loadAllData, 20000); // Update every 20 seconds
+        setInterval(loadAllData, 30000); // Update every 30 seconds
     </script>
 </body>
 </html>
