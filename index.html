@@ -12,155 +12,244 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
             min-height: 100vh;
             padding: 20px;
             color: #fff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 50px;
+            padding: 40px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
         }
 
         .token-info {
+            display: inline-block;
+            background: rgba(167, 139, 250, 0.15);
+            padding: 10px 20px;
+            border-radius: 12px;
             font-size: 0.9em;
-            opacity: 0.9;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(167, 139, 250, 0.3);
             margin-top: 10px;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
             margin-bottom: 40px;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(167, 139, 250, 0.3);
+            border-color: rgba(167, 139, 250, 0.4);
         }
 
         .stat-label {
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-bottom: 10px;
+            font-size: 0.95em;
+            opacity: 0.7;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
         }
 
         .stat-value {
-            font-size: 2em;
-            font-weight: bold;
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .progress-section {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            font-weight: 700;
         }
 
         .progress-bar {
             width: 100%;
-            height: 40px;
+            height: 50px;
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
+            border-radius: 25px;
             overflow: hidden;
-            margin: 20px 0;
+            margin: 25px 0;
             position: relative;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-            border-radius: 20px;
-            transition: width 1s ease;
+            background: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 50%, #06b6d4 100%);
+            border-radius: 25px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 0 20px rgba(79, 172, 254, 0.5);
+            font-weight: 700;
+            font-size: 1.1em;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            to { left: 100%; }
         }
 
         .transactions-section {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .transactions-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .transactions-header h2 {
+            font-size: 1.8em;
+            font-weight: 700;
         }
 
         .live-indicator {
             display: flex;
             align-items: center;
             gap: 10px;
+            background: rgba(34, 197, 94, 0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
         .pulse {
-            width: 12px;
-            height: 12px;
-            background: #00ff00;
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px #22c55e;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            0%, 100% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
         }
 
         .tx-list {
-            max-height: 500px;
+            max-height: 600px;
             overflow-y: auto;
+            padding-right: 10px;
         }
 
         .tx-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            border-left: 4px solid #4facfe;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            border-left: 4px solid #8b5cf6;
             transition: all 0.3s ease;
             animation: slideIn 0.5s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateX(-20px);
+                transform: translateX(-30px);
             }
             to {
                 opacity: 1;
@@ -169,124 +258,166 @@
         }
 
         .tx-item:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(139, 92, 246, 0.1);
             transform: translateX(5px);
+            border-left-color: #60a5fa;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
         }
 
         .tx-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            margin-bottom: 12px;
             font-size: 0.9em;
-        }
-
-        .tx-amount {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #4facfe;
-        }
-
-        .tx-address {
-            font-family: monospace;
-            font-size: 0.85em;
             opacity: 0.8;
         }
 
-        .tx-link {
-            color: #4facfe;
-            text-decoration: none;
+        .tx-amount {
+            font-size: 1.4em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .tx-address {
+            font-family: 'Courier New', monospace;
             font-size: 0.85em;
-            transition: color 0.3s ease;
+            opacity: 0.7;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .tx-link {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .tx-link:hover {
-            color: #00f2fe;
+            color: #93c5fd;
             text-decoration: underline;
         }
 
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 40px;
             font-size: 1.2em;
+            opacity: 0.7;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #8b5cf6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .footer {
             text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 50px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .creator-link {
-            color: #4facfe;
+            color: #60a5fa;
             text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s ease;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .creator-link:hover {
-            color: #00f2fe;
+            color: #93c5fd;
+            text-decoration: underline;
         }
 
-        .error {
-            background: rgba(255, 100, 100, 0.3);
-            padding: 15px;
-            border-radius: 10px;
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 100, 100, 0.5);
-            font-size: 0.9em;
+            border: 1px solid;
+            animation: slideDown 0.3s ease;
         }
 
-        .success {
-            background: rgba(100, 255, 100, 0.3);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(100, 255, 100, 0.5);
-            font-size: 0.9em;
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .pool-info {
+            font-size: 0.85em;
+            opacity: 0.6;
+            margin-top: 4px;
         }
 
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
 
         ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(79, 172, 254, 0.5);
+            background: rgba(139, 92, 246, 0.5);
             border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(79, 172, 254, 0.8);
+            background: rgba(139, 92, 246, 0.7);
         }
 
-        .pool-status {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .pool-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.85em;
-        }
-
-        .pool-card.success {
-            border-left: 3px solid #4ade80;
-        }
-
-        .pool-card.error {
-            border-left: 3px solid #f87171;
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -294,40 +425,39 @@
     <div class="container">
         <div class="header">
             <h1>$SKR Airdrop Tracker</h1>
-            <p>Real-time claim monitoring on Solana Mainnet</p>
+            <p>Real-time Claim Monitoring on Solana Mainnet</p>
             <div class="token-info">
-                Token CA: SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3
+                SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3
             </div>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-label">Total Claims</div>
-                <div class="stat-value" id="totalClaims">-</div>
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-value" id="totalClaims">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Amount Claimed</div>
-                <div class="stat-value" id="totalAmount">-</div>
+                <div class="stat-label">Total Amount</div>
+                <div class="stat-value" id="totalAmount" style="font-size: 1.8em;">0 $SKR</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Unique Claimers</div>
-                <div class="stat-value" id="uniqueClaimers">-</div>
+                <div class="stat-label">Unique Addresses</div>
+                <div class="stat-value" id="uniqueClaimers">0</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Last Update</div>
-                <div class="stat-value" id="lastUpdate" style="font-size: 1.2em;">-</div>
+                <div class="stat-value" id="lastUpdate" style="font-size: 1.3em;">--:--:--</div>
             </div>
         </div>
 
         <div class="progress-section">
-            <h2>Claim Progress</h2>
+            <h2>Activity Progress</h2>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill" style="width: 0%">
                     <span id="progressText">0%</span>
                 </div>
             </div>
-            <p style="text-align: center; opacity: 0.8;" id="progressInfo">Loading data...</p>
-            <div id="poolStatus" class="pool-status"></div>
+            <p style="text-align: center; opacity: 0.8; font-size: 1.05em;" id="progressInfo">Initializing connection to Solana...</p>
         </div>
 
         <div class="transactions-section">
@@ -335,18 +465,25 @@
                 <h2>Live Transactions</h2>
                 <div class="live-indicator">
                     <div class="pulse"></div>
-                    <span>LIVE</span>
+                    <span style="font-weight: 600; font-size: 0.95em;">LIVE</span>
                 </div>
             </div>
-            <div id="statusContainer"></div>
+            <div id="alertContainer"></div>
             <div id="txList" class="tx-list">
-                <div class="loading">Loading transactions...</div>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Fetching real-time data from Solana blockchain...
+                </div>
             </div>
         </div>
 
         <div class="footer">
-            <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
-            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">Data updates every 15 seconds</p>
+            <p style="font-size: 1.1em; margin-bottom: 10px;">
+                Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a>
+            </p>
+            <p style="font-size: 0.9em; opacity: 0.7;">
+                Real-time data from Solana RPC • Updates every 20 seconds
+            </p>
         </div>
     </div>
 
@@ -359,275 +496,296 @@
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
         ];
 
+        // Use public RPC endpoints
         const RPC_ENDPOINTS = [
-            'https://api.mainnet-beta.solana.com',
-            'https://solana-api.projectserum.com',
-            'https://rpc.ankr.com/solana'
+            'https://go.getblock.io/d3c5e93c531b4539ae84330c28e7ff63',
+            'https://solana-mainnet.g.alchemy.com/v2/demo',
+            'https://api.mainnet-beta.solana.com'
         ];
 
         let allTransactions = [];
         let uniqueAddresses = new Set();
-        let totalAmountClaimed = 0;
-        let currentRpcIndex = 0;
-        let poolStatuses = {};
+        let totalAmount = 0;
+        let currentEndpointIndex = 0;
 
-        async function fetchWithRetry(endpoint, body, retries = 3) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(body)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    
-                    if (data.error) {
-                        throw new Error(data.error.message || 'RPC Error');
-                    }
-
-                    return data;
-                } catch (err) {
-                    console.log(`Attempt ${i + 1} failed:`, err.message);
-                    if (i === retries - 1) throw err;
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alertContainer');
+            const alertClass = `alert-${type}`;
+            container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+            
+            setTimeout(() => {
+                if (container.innerHTML.includes(message)) {
+                    container.innerHTML = '';
                 }
-            }
+            }, 10000);
         }
 
-        async function getCurrentRpcEndpoint() {
-            const endpoint = RPC_ENDPOINTS[currentRpcIndex];
-            currentRpcIndex = (currentRpcIndex + 1) % RPC_ENDPOINTS.length;
-            return endpoint;
+        async function rpcCall(method, params) {
+            const endpoint = RPC_ENDPOINTS[currentEndpointIndex];
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: method,
+                        params: params
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                return data.result;
+            } catch (error) {
+                console.error(`RPC Error with ${endpoint}:`, error);
+                // Try next endpoint
+                currentEndpointIndex = (currentEndpointIndex + 1) % RPC_ENDPOINTS.length;
+                throw error;
+            }
         }
 
         async function fetchPoolTransactions(poolAddress) {
             try {
-                const endpoint = await getCurrentRpcEndpoint();
-                
-                const data = await fetchWithRetry(endpoint, {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'getSignaturesForAddress',
-                    params: [
-                        poolAddress,
-                        { limit: 50 }
-                    ]
-                });
+                const signatures = await rpcCall('getSignaturesForAddress', [
+                    poolAddress,
+                    { limit: 20 }
+                ]);
 
-                if (data.result) {
-                    poolStatuses[poolAddress] = 'success';
-                    return data.result.map(tx => ({
-                        ...tx,
-                        poolAddress: poolAddress
-                    }));
+                if (!signatures || signatures.length === 0) {
+                    return [];
                 }
-                poolStatuses[poolAddress] = 'error';
-                return [];
-            } catch (err) {
-                console.error(`Error fetching from pool ${poolAddress}:`, err);
-                poolStatuses[poolAddress] = 'error';
+
+                return signatures.map(sig => ({
+                    signature: sig.signature,
+                    blockTime: sig.blockTime,
+                    slot: sig.slot,
+                    err: sig.err,
+                    poolAddress: poolAddress
+                }));
+            } catch (error) {
+                console.error(`Failed to fetch from pool ${poolAddress}:`, error);
                 return [];
             }
         }
 
         async function fetchTransactionDetails(signature) {
             try {
-                const endpoint = await getCurrentRpcEndpoint();
-                
-                const data = await fetchWithRetry(endpoint, {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'getTransaction',
-                    params: [
-                        signature,
-                        { 
-                            encoding: 'jsonParsed',
-                            maxSupportedTransactionVersion: 0
-                        }
-                    ]
-                });
+                const tx = await rpcCall('getTransaction', [
+                    signature,
+                    {
+                        encoding: 'jsonParsed',
+                        maxSupportedTransactionVersion: 0
+                    }
+                ]);
 
-                return data.result;
-            } catch (err) {
-                console.error('Error fetching transaction details:', err);
+                return tx;
+            } catch (error) {
+                console.error(`Failed to fetch transaction ${signature}:`, error);
                 return null;
             }
         }
 
-        async function loadAllTransactions() {
+        function parseTransactionAmount(txDetails) {
+            if (!txDetails || !txDetails.meta) return null;
+
             try {
-                showStatus('Fetching data from Solana blockchain...', 'info');
+                const { preTokenBalances, postTokenBalances } = txDetails.meta;
                 
-                const promises = POOL_ADDRESSES.map(addr => fetchPoolTransactions(addr));
-                const results = await Promise.all(promises);
-                
-                const combinedTxs = results.flat();
-                
-                if (combinedTxs.length === 0) {
-                    showStatus('No transactions found. This might be due to RPC limits. Retrying...', 'error');
-                    updatePoolStatus();
-                    return;
+                if (!preTokenBalances || !postTokenBalances) return null;
+
+                for (const postBalance of postTokenBalances) {
+                    if (postBalance.mint === TOKEN_CA) {
+                        const preBalance = preTokenBalances.find(
+                            pre => pre.accountIndex === postBalance.accountIndex
+                        );
+
+                        if (preBalance && postBalance.uiTokenAmount && preBalance.uiTokenAmount) {
+                            const amount = postBalance.uiTokenAmount.uiAmount - preBalance.uiTokenAmount.uiAmount;
+                            if (amount !== 0) {
+                                return amount;
+                            }
+                        }
+                    }
                 }
 
-                const uniqueTxs = [...new Map(combinedTxs.map(tx => [tx.signature, tx])).values()];
-                uniqueTxs.sort((a, b) => b.blockTime - a.blockTime);
-                
-                allTransactions = uniqueTxs.slice(0, 100);
-                
-                showStatus(`Successfully loaded ${allTransactions.length} transactions from ${Object.values(poolStatuses).filter(s => s === 'success').length} pools`, 'success');
-                
-                await displayTransactions();
-                updateStats();
-                updatePoolStatus();
-                
-            } catch (err) {
-                console.error('Error loading transactions:', err);
-                showStatus('Failed to load transaction data. Retrying with different RPC...', 'error');
-                updatePoolStatus();
+                return null;
+            } catch (error) {
+                console.error('Error parsing transaction:', error);
+                return null;
             }
         }
 
-        function updatePoolStatus() {
-            const poolStatus = document.getElementById('poolStatus');
-            let html = '';
-            
-            POOL_ADDRESSES.forEach((addr, idx) => {
-                const status = poolStatuses[addr] || 'loading';
-                const shortAddr = addr.substring(0, 8) + '...' + addr.substring(addr.length - 8);
-                html += `
-                    <div class="pool-card ${status}">
-                        <strong>Pool ${idx + 1}</strong><br>
-                        ${shortAddr}<br>
-                        Status: ${status === 'success' ? '✓ Connected' : status === 'error' ? '✗ Error' : '⟳ Loading'}
-                    </div>
-                `;
-            });
-            
-            poolStatus.innerHTML = html;
+        function getAccountFromTransaction(txDetails) {
+            try {
+                if (txDetails && txDetails.transaction && txDetails.transaction.message) {
+                    const accountKeys = txDetails.transaction.message.accountKeys;
+                    if (accountKeys && accountKeys.length > 1) {
+                        return accountKeys[1].pubkey || null;
+                    }
+                }
+                return null;
+            } catch (error) {
+                return null;
+            }
         }
 
-        async function displayTransactions() {
+        async function loadAllData() {
+            try {
+                showAlert('🔄 Fetching transactions from Solana blockchain...', 'info');
+
+                const poolPromises = POOL_ADDRESSES.map(addr => fetchPoolTransactions(addr));
+                const poolResults = await Promise.all(poolPromises);
+
+                const allSigs = poolResults.flat();
+                
+                if (allSigs.length === 0) {
+                    showAlert('⚠️ No transactions found. The pools might be inactive or RPC is rate-limiting.', 'error');
+                    return;
+                }
+
+                // Remove duplicates
+                const uniqueSigs = [...new Map(allSigs.map(tx => [tx.signature, tx])).values()];
+                uniqueSigs.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
+
+                allTransactions = [];
+                uniqueAddresses.clear();
+                totalAmount = 0;
+
+                showAlert(`✅ Found ${uniqueSigs.length} transactions. Processing details...`, 'success');
+
+                // Process transactions in batches
+                const batchSize = 10;
+                for (let i = 0; i < Math.min(uniqueSigs.length, 30); i += batchSize) {
+                    const batch = uniqueSigs.slice(i, i + batchSize);
+                    const detailPromises = batch.map(tx => fetchTransactionDetails(tx.signature));
+                    const details = await Promise.all(detailPromises);
+
+                    for (let j = 0; j < batch.length; j++) {
+                        const tx = batch[j];
+                        const detail = details[j];
+
+                        if (detail) {
+                            const amount = parseTransactionAmount(detail);
+                            const account = getAccountFromTransaction(detail);
+
+                            allTransactions.push({
+                                signature: tx.signature,
+                                blockTime: tx.blockTime,
+                                amount: amount || 0,
+                                account: account || 'Unknown',
+                                poolAddress: tx.poolAddress
+                            });
+
+                            if (account) {
+                                uniqueAddresses.add(account);
+                            }
+                            if (amount) {
+                                totalAmount += Math.abs(amount);
+                            }
+                        }
+                    }
+
+                    displayTransactions();
+                    updateStats();
+                }
+
+                showAlert(`✅ Successfully loaded ${allTransactions.length} transactions from blockchain`, 'success');
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showAlert(`❌ Error: ${error.message}. Retrying with different RPC...`, 'error');
+            }
+        }
+
+        function displayTransactions() {
             const txList = document.getElementById('txList');
-            
+
             if (allTransactions.length === 0) {
-                txList.innerHTML = '<div class="loading">No transactions found yet. Waiting for claims...</div>';
+                txList.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        No transactions found yet. Waiting for blockchain data...
+                    </div>
+                `;
                 return;
             }
 
             let html = '';
-            const processedTxs = allTransactions.slice(0, 30);
-            
-            for (const tx of processedTxs) {
-                const details = await fetchTransactionDetails(tx.signature);
-                let amount = 'Processing';
-                let recipient = 'Unknown';
-
-                if (details) {
-                    try {
-                        if (details.meta && details.meta.postTokenBalances && details.meta.preTokenBalances) {
-                            for (const postBalance of details.meta.postTokenBalances) {
-                                if (postBalance.mint === TOKEN_CA) {
-                                    const preBalance = details.meta.preTokenBalances.find(
-                                        b => b.accountIndex === postBalance.accountIndex
-                                    );
-                                    
-                                    if (preBalance) {
-                                        const diff = postBalance.uiTokenAmount.uiAmount - preBalance.uiTokenAmount.uiAmount;
-                                        if (diff > 0) {
-                                            amount = diff.toLocaleString('en-US', { maximumFractionDigits: 2 });
-                                            totalAmountClaimed += diff;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (details.transaction && details.transaction.message && details.transaction.message.accountKeys) {
-                            const accounts = details.transaction.message.accountKeys;
-                            if (accounts.length > 1) {
-                                recipient = accounts[1].pubkey || 'Unknown';
-                                uniqueAddresses.add(recipient);
-                            }
-                        }
-                    } catch (err) {
-                        console.error('Error parsing transaction:', err);
-                    }
-                }
-
-                const date = new Date(tx.blockTime * 1000);
-                const timeAgo = getTimeAgo(date);
+            allTransactions.slice(0, 30).forEach(tx => {
+                const timeAgo = tx.blockTime ? getTimeAgo(new Date(tx.blockTime * 1000)) : 'Unknown time';
+                const shortAddr = tx.account !== 'Unknown' 
+                    ? tx.account.substring(0, 8) + '...' + tx.account.substring(tx.account.length - 8)
+                    : 'Unknown';
+                const poolShort = tx.poolAddress.substring(0, 8) + '...';
 
                 html += `
                     <div class="tx-item">
                         <div class="tx-header">
-                            <span>${timeAgo}</span>
-                            <a href="https://solscan.io/tx/${tx.signature}" target="_blank" class="tx-link">View on Solscan →</a>
+                            <span>⏱ ${timeAgo}</span>
+                            <a href="https://solscan.io/tx/${tx.signature}" target="_blank" class="tx-link">
+                                View on Solscan →
+                            </a>
                         </div>
-                        <div class="tx-amount">+${amount} $SKR</div>
-                        <div class="tx-address">To: ${recipient.substring(0, 8)}...${recipient.substring(recipient.length - 8)}</div>
+                        <div class="tx-amount">${tx.amount >= 0 ? '+' : ''}${tx.amount.toLocaleString(undefined, {maximumFractionDigits: 2})} $SKR</div>
+                        <div class="tx-address">Account: ${shortAddr}</div>
+                        <div class="pool-info">Pool: ${poolShort}</div>
                     </div>
                 `;
-            }
+            });
 
             txList.innerHTML = html;
         }
 
         function updateStats() {
-            const totalClaims = allTransactions.length;
-            const uniqueClaimers = uniqueAddresses.size;
-            
-            document.getElementById('totalClaims').textContent = totalClaims.toLocaleString();
-            document.getElementById('uniqueClaimers').textContent = uniqueClaimers.toLocaleString();
+            document.getElementById('totalClaims').textContent = allTransactions.length.toLocaleString();
             document.getElementById('totalAmount').textContent = 
-                totalAmountClaimed > 0 
-                    ? totalAmountClaimed.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' $SKR'
-                    : 'Calculating...';
-            
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+                totalAmount.toLocaleString(undefined, {maximumFractionDigits: 0}) + ' $SKR';
+            document.getElementById('uniqueClaimers').textContent = uniqueAddresses.size.toLocaleString();
 
-            const estimatedTotal = 10000;
-            const progress = Math.min((totalClaims / estimatedTotal) * 100, 100);
-            
-            document.getElementById('progressFill').style.width = progress + '%';
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const estimatedTotal = 1000;
+            const progress = Math.min((allTransactions.length / estimatedTotal) * 100, 100);
+
+            document.getElementById('progressFill').style.width = progress.toFixed(2) + '%';
             document.getElementById('progressText').textContent = progress.toFixed(2) + '%';
             document.getElementById('progressInfo').textContent = 
-                `${totalClaims.toLocaleString()} claims processed from ${Object.values(poolStatuses).filter(s => s === 'success').length} active pools`;
+                `${allTransactions.length} transactions • ${uniqueAddresses.size} unique addresses • ${POOL_ADDRESSES.length} pools monitored`;
         }
 
         function getTimeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
-            
+
             if (seconds < 60) return `${seconds}s ago`;
             if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
             if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
             return `${Math.floor(seconds / 86400)}d ago`;
         }
 
-        function showStatus(message, type) {
-            const statusContainer = document.getElementById('statusContainer');
-            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'error';
-            statusContainer.innerHTML = `<div class="${className}">${message}</div>`;
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusContainer.innerHTML = '';
-                }, 5000);
-            }
-        }
-
-        console.log('$SKR Airdrop Tracker initialized');
+        // Initialize
+        console.log('$SKR Airdrop Tracker - Real Data Mode');
         console.log('Monitoring pools:', POOL_ADDRESSES);
-        
-        loadAllTransactions();
-        setInterval(loadAllTransactions, 15000);
+        console.log('Token:', TOKEN_CA);
+
+        loadAllData();
+        setInterval(loadAllData, 20000); // Update every 20 seconds
     </script>
 </body>
 </html>
