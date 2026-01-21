@@ -1,0 +1,18 @@
+{
+  "name": "skr-airdrop-tracker",
+  "version": "1.0.0",
+  "description": "$SKR Airdrop Claim Tracker - Real-time Solana blockchain monitor",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel"
+  },
+  "keywords": [
+    "solana",
+    "airdrop",
+    "blockchain",
+    "skr"
+  ],
+  "author": "@ega_2ez4crypto",
+  "license": "MIT"
+}
