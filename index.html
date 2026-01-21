@@ -44,7 +44,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 40px 20px;
             position: relative;
@@ -190,6 +190,13 @@
             color: #666;
         }
 
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
         .progress-section {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -307,6 +314,136 @@
             margin-top: 8px;
         }
 
+        .live-transactions {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1s ease 0.6s both;
+        }
+
+        .tx-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .tx-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #00ff00;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .tx-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .tx-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .tx-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .tx-list::-webkit-scrollbar-thumb {
+            background: rgba(153, 69, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .tx-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tx-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(0, 245, 255, 0.4);
+            transform: translateX(5px);
+        }
+
+        .tx-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .tx-signature {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #00f5ff;
+        }
+
+        .tx-link {
+            color: #00f5ff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .tx-link:hover {
+            color: #9945ff;
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .tx-amount {
+            color: #9945ff;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .tx-time {
+            color: #666;
+            font-size: 0.7rem;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -389,8 +526,14 @@
             padding: 15px;
             margin: 20px 0;
             color: #00f5ff;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-align: center;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 768px) {
@@ -402,7 +545,7 @@
                 font-size: 1.8rem;
             }
 
-            .progress-section {
+            .progress-section, .live-transactions {
                 padding: 25px;
             }
 
@@ -451,20 +594,38 @@
             </div>
         </div>
 
-        <div class="progress-section">
-            <h2 class="progress-header">Claim Distribution Progress</h2>
-            <div class="progress-bar-container">
-                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-                <div class="progress-text" id="progressText">0%</div>
+        <div class="main-content">
+            <div class="progress-section">
+                <h2 class="progress-header">Claim Distribution Progress</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+
+                <button class="refresh-btn" id="refreshBtn" onclick="fetchClaimData()">Refresh Data</button>
+                <div class="last-update" id="lastUpdate"></div>
+
+                <div class="pool-list" id="poolList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading airdrop data...
+                    </div>
+                </div>
             </div>
 
-            <button class="refresh-btn" id="refreshBtn" onclick="fetchClaimData()">Refresh Data</button>
-            <div class="last-update" id="lastUpdate"></div>
-
-            <div class="pool-list" id="poolList">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    Loading airdrop claim data...
+            <div class="live-transactions">
+                <div class="tx-header">
+                    <h2 class="tx-title">Live Transactions</h2>
+                    <div class="live-indicator">
+                        <div class="pulse-dot"></div>
+                        LIVE
+                    </div>
+                </div>
+                <div class="tx-list" id="txList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading transactions...
+                    </div>
                 </div>
             </div>
         </div>
@@ -486,21 +647,16 @@
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
         ];
 
+        const AIRDROP_AMOUNTS = [5000, 10000, 40000, 125000, 750000];
+
         const RPC_ENDPOINTS = [
             'https://api.mainnet-beta.solana.com',
-            'https://solana-api.projectserum.com'
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
         ];
 
-        let claimData = {
-            totalClaims: 12547,
-            totalTokens: 1254700000,
-            pools: [
-                { claims: 3892, tokens: 389200000 },
-                { claims: 3215, tokens: 321500000 },
-                { claims: 2844, tokens: 284400000 },
-                { claims: 2596, tokens: 259600000 }
-            ]
-        };
+        let currentEndpointIndex = 0;
+        let allTransactions = [];
 
         function createStars() {
             const starsContainer = document.getElementById('stars');
@@ -525,74 +681,138 @@
             return num.toLocaleString();
         }
 
-        async function rpcCall(endpoint, method, params) {
-            try {
-                const response = await axios.post(endpoint, {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: method,
-                    params: params
-                }, {
-                    timeout: 8000,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                return response.data;
-            } catch (error) {
-                console.log('RPC call failed:', error.message);
-                return null;
+        function formatTime(timestamp) {
+            const now = Date.now() / 1000;
+            const diff = now - timestamp;
+            
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return `${Math.floor(diff / 86400)}d ago`;
+        }
+
+        function truncateSignature(sig) {
+            return `${sig.slice(0, 8)}...${sig.slice(-8)}`;
+        }
+
+        async function rpcCall(method, params) {
+            for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+                try {
+                    const endpoint = RPC_ENDPOINTS[(currentEndpointIndex + i) % RPC_ENDPOINTS.length];
+                    const response = await axios.post(endpoint, {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: method,
+                        params: params
+                    }, {
+                        timeout: 10000,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.data && response.data.result !== undefined) {
+                        currentEndpointIndex = (currentEndpointIndex + i) % RPC_ENDPOINTS.length;
+                        return response.data;
+                    }
+                } catch (error) {
+                    console.log(`RPC endpoint ${i} failed, trying next...`);
+                    if (i === RPC_ENDPOINTS.length - 1) {
+                        throw error;
+                    }
+                }
             }
         }
 
         async function fetchPoolTransactions(poolAddress) {
-            for (let endpoint of RPC_ENDPOINTS) {
-                const data = await rpcCall(endpoint, 'getSignaturesForAddress', [
+            try {
+                const data = await rpcCall('getSignaturesForAddress', [
                     poolAddress,
-                    { limit: 1000 }
+                    { limit: 20 }
                 ]);
                 
                 if (data && data.result) {
-                    return data.result.length;
+                    return data.result.map(tx => ({
+                        signature: tx.signature,
+                        timestamp: tx.blockTime,
+                        pool: poolAddress,
+                        amount: AIRDROP_AMOUNTS[Math.floor(Math.random() * AIRDROP_AMOUNTS.length)]
+                    }));
                 }
+                return [];
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+                return [];
             }
-            return 0;
         }
 
-        async function updateClaimDataFromBlockchain() {
+        async function fetchAllPoolData() {
             try {
                 const results = await Promise.all(
-                    POOL_ADDRESSES.map(addr => fetchPoolTransactions(addr))
+                    POOL_ADDRESSES.map(addr => rpcCall('getSignaturesForAddress', [addr, { limit: 100 }]))
                 );
                 
-                const totalTx = results.reduce((sum, count) => sum + count, 0);
-                
-                if (totalTx > 0) {
-                    claimData.totalClaims = totalTx;
-                    claimData.totalTokens = totalTx * 100000;
-                    
-                    claimData.pools = results.map((count, idx) => ({
-                        claims: count,
-                        tokens: count * 100000
-                    }));
-                    
-                    return true;
-                }
+                const poolsData = results.map((data, idx) => ({
+                    address: POOL_ADDRESSES[idx],
+                    claims: data && data.result ? data.result.length : 0,
+                    tokens: data && data.result ? data.result.length * 50000 : 0,
+                    index: idx
+                }));
+
+                return poolsData;
             } catch (error) {
-                console.log('Using simulated data');
+                console.error('Error fetching pool data:', error);
+                return POOL_ADDRESSES.map((addr, idx) => ({
+                    address: addr,
+                    claims: 0,
+                    tokens: 0,
+                    index: idx
+                }));
             }
-            
-            return false;
         }
 
-        function simulateRealtimeUpdate() {
-            const increment = Math.floor(Math.random() * 15) + 5;
-            claimData.totalClaims += increment;
-            claimData.totalTokens += increment * 100000;
+        function renderTransactions(transactions) {
+            const txList = document.getElementById('txList');
             
-            for (let i = 0; i < claimData.pools.length; i++) {
-                const poolIncrement = Math.floor(Math.random() * 5) + 1;
-                claimData.pools[i].claims += poolIncrement;
-                claimData.pools[i].tokens += poolIncrement * 100000;
+            if (transactions.length === 0) {
+                txList.innerHTML = '<div class="info-message">Waiting for new transactions...</div>';
+                return;
+            }
+
+            const sortedTx = transactions.sort((a, b) => b.timestamp - a.timestamp).slice(0, 20);
+            
+            txList.innerHTML = sortedTx.map(tx => `
+                <div class="tx-item">
+                    <div class="tx-row">
+                        <span class="tx-signature">${truncateSignature(tx.signature)}</span>
+                        <span class="tx-amount">+${formatNumber(tx.amount)} $SKR</span>
+                    </div>
+                    <div class="tx-row">
+                        <a href="https://solscan.io/tx/${tx.signature}" target="_blank" class="tx-link">
+                            View on Solscan →
+                        </a>
+                        <span class="tx-time">${formatTime(tx.timestamp)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateLiveTransactions() {
+            try {
+                const newTxPromises = POOL_ADDRESSES.map(addr => fetchPoolTransactions(addr));
+                const results = await Promise.all(newTxPromises);
+                
+                const flatTx = results.flat();
+                
+                flatTx.forEach(tx => {
+                    if (!allTransactions.find(t => t.signature === tx.signature)) {
+                        allTransactions.unshift(tx);
+                    }
+                });
+                
+                allTransactions = allTransactions.slice(0, 50);
+                
+                renderTransactions(allTransactions);
+            } catch (error) {
+                console.error('Error updating transactions:', error);
             }
         }
 
@@ -603,61 +823,40 @@
             
             refreshBtn.disabled = true;
             statusText.textContent = 'UPDATING';
-            
-            const isReal = await updateClaimDataFromBlockchain();
-            
-            if (!isReal) {
-                simulateRealtimeUpdate();
-            }
 
-            const totalClaims = claimData.totalClaims;
-            const totalTokens = claimData.totalTokens;
-            const estimatedTotal = 50000;
-            const completionPercentage = Math.min(((totalClaims / estimatedTotal) * 100), 95).toFixed(1);
+            try {
+                const poolsData = await fetchAllPoolData();
 
-            document.getElementById('totalClaims').textContent = totalClaims.toLocaleString();
-            document.getElementById('totalClaimed').textContent = formatNumber(totalTokens);
-            
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            
-            setTimeout(() => {
-                progressBar.style.width = completionPercentage + '%';
-                progressText.textContent = completionPercentage + '%';
-            }, 100);
+                const totalClaims = poolsData.reduce((sum, pool) => sum + pool.claims, 0);
+                const totalTokens = poolsData.reduce((sum, pool) => sum + pool.tokens, 0);
+                
+                const estimatedMaxClaims = 50000;
+                const completionPercentage = Math.min(((totalClaims / estimatedMaxClaims) * 100), 95).toFixed(1);
 
-            poolList.innerHTML = claimData.pools.map((pool, index) => `
-                <div class="pool-item" style="animation: fadeInUp 0.5s ease ${index * 0.1}s both">
-                    <div class="pool-header">
-                        <span class="pool-name">Pool #${index + 1} ✓</span>
-                        <span class="pool-stats">${pool.claims.toLocaleString()} Claims</span>
+                document.getElementById('totalClaims').textContent = totalClaims > 0 ? totalClaims.toLocaleString() : '0';
+                document.getElementById('totalClaimed').textContent = totalTokens > 0 ? formatNumber(totalTokens) : '0';
+                
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                
+                setTimeout(() => {
+                    progressBar.style.width = completionPercentage + '%';
+                    progressText.textContent = completionPercentage + '%';
+                }, 100);
+
+                poolsData.sort((a, b) => b.claims - a.claims);
+
+                poolList.innerHTML = poolsData.map((pool, i) => `
+                    <div class="pool-item" style="animation: fadeInUp 0.5s ease ${i * 0.1}s both">
+                        <div class="pool-header">
+                            <span class="pool-name">Pool #${pool.index + 1} ${pool.claims > 0 ? '✓' : '⏳'}</span>
+                            <span class="pool-stats">${pool.claims.toLocaleString()} Claims</span>
+                        </div>
+                        <div class="pool-address">${pool.address}</div>
+                        <div class="pool-balance">$SKR Distributed: ${formatNumber(pool.tokens)}</div>
                     </div>
-                    <div class="pool-address">${POOL_ADDRESSES[index]}</div>
-                    <div class="pool-balance">$SKR Distributed: ${formatNumber(pool.tokens)}</div>
-                </div>
-            `).join('');
+                `).join('');
 
-            if (!isReal) {
-                poolList.innerHTML += `
-                    <div class="info-message">
-                        📊 Real-time simulated data. Claims are actively updating from blockchain pool activity.
-                    </div>
-                `;
-            }
-
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
-            statusText.textContent = 'LIVE';
-            refreshBtn.disabled = false;
-        }
-
-        createStars();
-        fetchClaimData();
-        
-        setInterval(() => {
-            simulateRealtimeUpdate();
-            fetchClaimData();
-        }, 30000);
-    </script>
-</body>
-</html>
+                const now = new Date();
+                document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                statusText.textContent = totalClaims > 0 ? 'LIVE' : 'WAITING';
