@@ -16,8 +16,8 @@ export default async function handler(req, res) {
 
   const RPC_ENDPOINTS = [
     'https://api.mainnet-beta.solana.com',
-    'https://solana-api.projectserum.com',
-    'https://rpc.ankr.com/solana'
+    'https://rpc.ankr.com/solana',
+    'https://solana-api.projectserum.com'
   ];
 
   async function fetchPoolSignatures(poolAddress, rpcUrl) {
@@ -46,44 +46,4 @@ export default async function handler(req, res) {
     
     for (const rpcUrl of RPC_ENDPOINTS) {
       try {
-        const promises = POOLS.map(pool => fetchPoolSignatures(pool, rpcUrl));
-        const results = await Promise.all(promises);
-        
-        results.forEach(poolTxs => {
-          if (poolTxs && Array.isArray(poolTxs)) {
-            allTransactions.push(...poolTxs);
-          }
-        });
-
-        if (allTransactions.length > 0) {
-          break;
-        }
-      } catch (error) {
-        console.error(`RPC ${rpcUrl} failed:`, error.message);
-        continue;
-      }
-    }
-
-    const uniqueTxs = Array.from(
-      new Map(allTransactions.map(tx => [tx.signature, tx])).values()
-    );
-    
-    uniqueTxs.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
-
-    res.status(200).json({
-      success: true,
-      transactions: uniqueTxs,
-      count: uniqueTxs.length,
-      timestamp: Date.now()
-    });
-
-  } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      transactions: [],
-      count: 0
-    });
-  }
-}
+        const promises = POOLS.map(pool => fetchPoolS
