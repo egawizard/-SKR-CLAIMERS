@@ -845,4 +845,29 @@
                 }).join('');
 
                 const now = new Date();
-                document.getElementById('lastUpdate').textContent = `Last updated: ${now.
+                document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                statusText.textContent = 'LIVE';
+                isLoading = false;
+                refreshBtn.disabled = false;
+            }, 1000);
+        }
+
+        createStars();
+        
+        setTimeout(() => {
+            fetchClaimData();
+            updateLiveTransactions();
+        }, 500);
+        
+        setInterval(() => {
+            if (!isLoading) {
+                fetchClaimData();
+            }
+        }, 120000);
+        
+        setInterval(() => {
+            updateLiveTransactions();
+        }, 20000);
+    </script>
+</body>
+</html>
