@@ -1,10 +1,18 @@
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export const config = {
+  runtime: 'edge',
+};
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+export default async function handler(request) {
+  // Handle CORS
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
   }
 
   const POOLS = [
@@ -17,7 +25,6 @@ export default async function handler(req, res) {
   const RPC_ENDPOINTS = [
     'https://api.mainnet-beta.solana.com',
     'https://rpc.ankr.com/solana',
-    'https://solana-api.projectserum.com'
   ];
 
   async function fetchPoolSignatures(poolAddress, rpcUrl) {
@@ -36,7 +43,7 @@ export default async function handler(req, res) {
       const data = await response.json();
       return data.result || [];
     } catch (error) {
-      console.error(`Error fetching ${poolAddress}:`, error.message);
+      console.error(`Error fetching ${poolAddress}:`, error);
       return [];
     }
   }
@@ -46,4 +53,55 @@ export default async function handler(req, res) {
     
     for (const rpcUrl of RPC_ENDPOINTS) {
       try {
-        const promises = POOLS.map(pool => fetchPoolS
+        const promises = POOLS.map(pool => fetchPoolSignatures(pool, rpcUrl));
+        const results = await Promise.all(promises);
+        
+        results.forEach(poolTxs => {
+          if (poolTxs && Array.isArray(poolTxs)) {
+            allTransactions.push(...poolTxs);
+          }
+        });
+
+        if (allTransactions.length > 0) {
+          break;
+        }
+      } catch (error) {
+        console.error(`RPC ${rpcUrl} failed:`, error);
+        continue;
+      }
+    }
+
+    const uniqueTxs = Array.from(
+      new Map(allTransactions.map(tx => [tx.signature, tx])).values()
+    );
+    
+    uniqueTxs.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
+
+    return new Response(JSON.stringify({
+      success: true,
+      transactions: uniqueTxs,
+      count: uniqueTxs.length,
+      timestamp: Date.now()
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message,
+      transactions: [],
+      count: 0
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
+}
