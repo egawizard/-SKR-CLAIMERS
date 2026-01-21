@@ -365,45 +365,25 @@
         }
 
         @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .progress-section, .transactions-section {
-                padding: 25px;
-            }
-
-            .tx-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
+            h1 { font-size: 2em; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .progress-section, .transactions-section { padding: 25px; }
+            .tx-row { flex-direction: column; align-items: flex-start; gap: 8px; }
         }
     </style>
 </head>
@@ -420,17 +400,17 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">Total Claims</div>
-                <div class="stat-value" id="totalClaims">Loading...</div>
+                <div class="stat-value" id="totalClaims">-</div>
                 <div class="stat-subtext">Successful transactions</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Total Claimed</div>
-                <div class="stat-value" id="totalAmount">Loading...</div>
+                <div class="stat-value" id="totalAmount">-</div>
                 <div class="stat-subtext">$SKR tokens distributed</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Unique Claimers</div>
-                <div class="stat-value" id="uniqueClaimers">Loading...</div>
+                <div class="stat-value" id="uniqueClaimers">-</div>
                 <div class="stat-subtext">Wallet addresses</div>
             </div>
             <div class="stat-card">
@@ -458,7 +438,7 @@
             <div id="txList" class="tx-list">
                 <div class="loading">
                     <div class="spinner"></div>
-                    Fetching real transaction data from Solana blockchain...
+                    Initializing tracker...
                 </div>
             </div>
         </div>
@@ -471,7 +451,10 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script>
+        const { Connection, PublicKey } = solanaWeb3;
+        
         const POOLS = [
             '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
             'CYPdPHMh1mD6ioFFVva7L2rFeKLBpcefVv5yv1p6iRqB',
@@ -481,189 +464,168 @@
 
         const TOKEN_MINT = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
         const TOTAL_SUPPLY = 1000000000;
-
+        
+        const RPC_URLS = [
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
+        ];
+        
+        let currentRpcIndex = 0;
+        let connection = new Connection(RPC_URLS[0], 'confirmed');
         let allTransactions = [];
 
         function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(2) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(2) + 'K';
-            }
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
             return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
         }
 
-        function formatAddress(address) {
-            if (!address) return 'Unknown';
-            return address.slice(0, 6) + '...' + address.slice(-6);
+        function formatAddress(addr) {
+            return addr ? addr.slice(0, 6) + '...' + addr.slice(-6) : 'Unknown';
         }
 
-        function timeAgo(timestamp) {
-            const seconds = Math.floor(Date.now() / 1000) - timestamp;
-            
-            if (seconds < 60) return `${seconds}s ago`;
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-            return `${Math.floor(seconds / 86400)}d ago`;
+        function timeAgo(ts) {
+            const s = Math.floor(Date.now() / 1000) - ts;
+            if (s < 60) return `${s}s ago`;
+            if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+            if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+            return `${Math.floor(s / 86400)}d ago`;
         }
 
-        async function fetchPoolSignatures(poolAddress) {
+        async function tryNextRpc() {
+            currentRpcIndex = (currentRpcIndex + 1) % RPC_URLS.length;
+            connection = new Connection(RPC_URLS[currentRpcIndex], 'confirmed');
+            console.log('Switching to RPC:', RPC_URLS[currentRpcIndex]);
+        }
+
+        async function fetchPoolData(poolAddr) {
             try {
-                const response = await fetch('https://api.mainnet-beta.solana.com', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        jsonrpc: '2.0',
-                        id: 1,
-                        method: 'getSignaturesForAddress',
-                        params: [
-                            poolAddress,
-                            { limit: 100 }
-                        ]
-                    })
-                });
+                const pubkey = new PublicKey(poolAddr);
+                const sigs = await connection.getSignaturesForAddress(pubkey, { limit: 100 });
+                
+                const validTxs = [];
+                
+                for (let i = 0; i < Math.min(sigs.length, 30); i++) {
+                    try {
+                        const tx = await connection.getParsedTransaction(sigs[i].signature, {
+                            maxSupportedTransactionVersion: 0
+                        });
 
-                const data = await response.json();
-                return data.result || [];
+                        if (tx && tx.meta && !tx.meta.err) {
+                            const postBal = tx.meta.postTokenBalances || [];
+                            const preBal = tx.meta.preTokenBalances || [];
+
+                            for (const post of postBal) {
+                                if (post.mint === TOKEN_MINT) {
+                                    const pre = preBal.find(p => p.accountIndex === post.accountIndex);
+                                    const preAmt = pre?.uiTokenAmount?.uiAmount || 0;
+                                    const postAmt = post.uiTokenAmount?.uiAmount || 0;
+                                    const amt = postAmt - preAmt;
+
+                                    if (amt > 0) {
+                                        validTxs.push({
+                                            signature: sigs[i].signature,
+                                            blockTime: sigs[i].blockTime || Math.floor(Date.now() / 1000),
+                                            amount: amt,
+                                            signer: tx.transaction.message.accountKeys[0].pubkey.toString()
+                                        });
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('TX error:', e.message);
+                    }
+
+                    if (i % 5 === 0) await new Promise(r => setTimeout(r, 200));
+                }
+
+                return validTxs;
             } catch (err) {
-                console.error(`Error fetching signatures for ${poolAddress}:`, err);
+                console.error('Pool error:', poolAddr, err.message);
                 return [];
             }
         }
 
-        async function fetchTransactionDetails(signature) {
+        async function fetchAllData() {
             try {
-                const response = await fetch('https://api.mainnet-beta.solana.com', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        jsonrpc: '2.0',
-                        id: 1,
-                        method: 'getTransaction',
-                        params: [
-                            signature,
-                            {
-                                encoding: 'jsonParsed',
-                                maxSupportedTransactionVersion: 0
-                            }
-                        ]
-                    })
-                });
-
-                const data = await response.json();
-                return data.result;
-            } catch (err) {
-                console.error(`Error fetching tx ${signature}:`, err);
-                return null;
-            }
-        }
-
-        function extractTokenTransferAmount(tx) {
-            if (!tx || !tx.meta || !tx.meta.postTokenBalances) return 0;
-
-            const preBalances = tx.meta.preTokenBalances || [];
-            const postBalances = tx.meta.postTokenBalances || [];
-
-            for (const postBal of postBalances) {
-                if (postBal.mint === TOKEN_MINT) {
-                    const preBal = preBalances.find(pb => 
-                        pb.accountIndex === postBal.accountIndex
-                    );
-                    
-                    const preAmount = preBal ? parseFloat(preBal.uiTokenAmount.uiAmountString) : 0;
-                    const postAmount = parseFloat(postBal.uiTokenAmount.uiAmountString);
-                    const diff = postAmount - preAmount;
-                    
-                    if (diff > 0) {
-                        return diff;
-                    }
-                }
-            }
-
-            return 0;
-        }
-
-        async function fetchAllTransactions() {
-            const allSigs = [];
-
-            for (const pool of POOLS) {
-                const sigs = await fetchPoolSignatures(pool);
-                allSigs.push(...sigs.slice(0, 25));
-                await new Promise(r => setTimeout(r, 300));
-            }
-
-            const uniqueSigs = [...new Map(allSigs.map(s => [s.signature, s])).values()];
-            uniqueSigs.sort((a, b) => b.blockTime - a.blockTime);
-
-            const transactions = [];
-            
-            for (let i = 0; i < Math.min(uniqueSigs.length, 50); i++) {
-                const sig = uniqueSigs[i];
-                const txDetail = await fetchTransactionDetails(sig.signature);
-                
-                if (txDetail) {
-                    const amount = extractTokenTransferAmount(txDetail);
-                    
-                    if (amount > 0) {
-                        transactions.push({
-                            signature: sig.signature,
-                            blockTime: sig.blockTime,
-                            amount: amount,
-                            signer: txDetail.transaction?.message?.accountKeys?.[0]?.pubkey || 
-                                   txDetail.transaction?.message?.accountKeys?.[0] || 
-                                   'Unknown'
-                        });
-                    }
-                }
-                
-                if (i % 5 === 0) {
-                    await new Promise(r => setTimeout(r, 500));
-                }
-            }
-
-            return transactions;
-        }
-
-        function calculateStats(transactions) {
-            const uniqueAddresses = new Set();
-            let totalAmount = 0;
-            
-            transactions.forEach(tx => {
-                if (tx.signer) {
-                    uniqueAddresses.add(tx.signer);
-                }
-                totalAmount += tx.amount;
-            });
-
-            return {
-                totalClaims: transactions.length,
-                totalAmount: totalAmount,
-                uniqueClaimers: uniqueAddresses.size,
-                progressPercentage: Math.min((totalAmount / TOTAL_SUPPLY) * 100, 100)
-            };
-        }
-
-        function renderTransactions(transactions) {
-            const txList = document.getElementById('txList');
-            
-            if (transactions.length === 0) {
-                txList.innerHTML = `
+                document.getElementById('txList').innerHTML = `
                     <div class="loading">
-                        No token transfer transactions found yet.<br>
-                        Please wait for new claims or refresh the page.
+                        <div class="spinner"></div>
+                        Scanning ${POOLS.length} airdrop pools on Solana...
                     </div>
                 `;
+
+                const results = [];
+                for (const pool of POOLS) {
+                    const data = await fetchPoolData(pool);
+                    results.push(...data);
+                    await new Promise(r => setTimeout(r, 500));
+                }
+
+                if (results.length === 0) {
+                    await tryNextRpc();
+                    throw new Error('No transactions found, trying different RPC');
+                }
+
+                results.sort((a, b) => b.blockTime - a.blockTime);
+                allTransactions = results;
+
+                updateStats(results);
+                renderTransactions(results);
+
+            } catch (err) {
+                console.error('Fetch error:', err);
+                document.getElementById('txList').innerHTML = `
+                    <div class="loading">
+                        No recent $SKR transfers detected from airdrop pools.<br>
+                        <small style="color: #6b7280; margin-top: 10px; display: block;">
+                            • Pool addresses may not have recent activity<br>
+                            • Retrying with different RPC endpoint...<br>
+                            • Auto-refresh in 45 seconds
+                        </small>
+                    </div>
+                `;
+                
+                updateStats([]);
+            }
+        }
+
+        function updateStats(txs) {
+            const unique = new Set(txs.map(t => t.signer));
+            const total = txs.reduce((sum, t) => sum + t.amount, 0);
+            const prog = Math.min((total / TOTAL_SUPPLY) * 100, 100);
+
+            document.getElementById('totalClaims').textContent = formatNumber(txs.length);
+            document.getElementById('totalAmount').textContent = formatNumber(total);
+            document.getElementById('uniqueClaimers').textContent = formatNumber(unique.size);
+            document.getElementById('progressPercentage').textContent = prog.toFixed(4) + '%';
+            
+            setTimeout(() => {
+                document.getElementById('progressBar').style.width = prog + '%';
+            }, 100);
+
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+
+        function renderTransactions(txs) {
+            const list = document.getElementById('txList');
+            
+            if (txs.length === 0) {
+                list.innerHTML = `<div class="loading">No transactions</div>`;
                 return;
             }
 
-            const html = transactions.map((tx, idx) => `
-                <div class="tx-item" style="animation: slideIn 0.5s ease ${idx * 0.05}s both">
+            list.innerHTML = txs.map((tx, i) => `
+                <div class="tx-item" style="animation: slideIn 0.5s ease ${i * 0.03}s both">
                     <div class="tx-row">
                         <a href="https://solscan.io/tx/${tx.signature}" 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           class="tx-signature"
-                           title="${tx.signature}">
+                           target="_blank" rel="noopener noreferrer" 
+                           class="tx-signature" title="${tx.signature}">
                             ${formatAddress(tx.signature)}
                         </a>
                         <div class="tx-amount">+${formatNumber(tx.amount)} $SKR</div>
@@ -674,67 +636,13 @@
                     </div>
                 </div>
             `).join('');
-
-            txList.innerHTML = html;
         }
 
-        function updateUI(stats) {
-            document.getElementById('totalClaims').textContent = formatNumber(stats.totalClaims);
-            document.getElementById('totalAmount').textContent = formatNumber(stats.totalAmount);
-            document.getElementById('uniqueClaimers').textContent = formatNumber(stats.uniqueClaimers);
-            document.getElementById('progressPercentage').textContent = stats.progressPercentage.toFixed(2) + '%';
-            
-            setTimeout(() => {
-                document.getElementById('progressBar').style.width = Math.min(stats.progressPercentage, 100) + '%';
-            }, 100);
-            
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-        }
-
-        async function updateData() {
-            try {
-                console.log('Fetching real transaction data...');
-                const transactions = await fetchAllTransactions();
-                
-                console.log(`Found ${transactions.length} token transfer transactions`);
-                allTransactions = transactions;
-                
-                if (transactions.length > 0) {
-                    const stats = calculateStats(transactions);
-                    updateUI(stats);
-                    renderTransactions(transactions);
-                } else {
-                    document.getElementById('txList').innerHTML = `
-                        <div class="loading">
-                            Scanning blockchain for $SKR token transfers...<br>
-                            This may take a moment.
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                console.error('Error updating data:', err);
-                document.getElementById('txList').innerHTML = `
-                    <div class="loading">
-                        Error loading data. Retrying in 30 seconds...<br>
-                        <small>${err.message}</small>
-                    </div>
-                `;
-            }
-        }
-
-        updateData();
-        setInterval(updateData, 60000);
-
+        fetchAllData();
+        setInterval(fetchAllData, 45000);
         setInterval(() => {
-            if (allTransactions.length > 0) {
-                renderTransactions(allTransactions);
-            }
-        }, 15000);
+            if (allTransactions.length > 0) renderTransactions(allTransactions);
+        }, 10000);
     </script>
 </body>
 </html>
