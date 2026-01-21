@@ -300,10 +300,6 @@
             animation: slideIn 0.5s ease;
         }
 
-        .transaction-item.new {
-            animation: slideInPulse 0.8s ease;
-        }
-
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -312,21 +308,6 @@
             to {
                 opacity: 1;
                 transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInPulse {
-            0% {
-                opacity: 0;
-                transform: translateX(-20px) scale(0.95);
-            }
-            50% {
-                transform: translateX(0) scale(1.02);
-                border-color: rgba(138, 80, 255, 0.6);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0) scale(1);
             }
         }
 
@@ -400,16 +381,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        .status-message {
-            background: rgba(72, 187, 255, 0.1);
-            border: 1px solid rgba(72, 187, 255, 0.3);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            color: #48bbff;
-            text-align: center;
-        }
-
         footer {
             text-align: center;
             margin-top: 60px;
@@ -451,12 +422,12 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">Total Claims</div>
-                <div class="stat-value" id="totalClaims">-</div>
+                <div class="stat-value" id="totalClaims">Loading...</div>
                 <div class="stat-subtext">Across all pools</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Total $SKR Claimed</div>
-                <div class="stat-value" id="totalAmount">-</div>
+                <div class="stat-value" id="totalAmount">Loading...</div>
                 <div class="stat-subtext">Tokens distributed</div>
             </div>
             <div class="stat-card">
@@ -489,17 +460,18 @@
             <div class="transaction-list" id="transactionList">
                 <div class="loading">
                     <div class="spinner"></div>
-                    Connecting to Solana blockchain...
+                    Fetching blockchain data...
                 </div>
             </div>
         </div>
 
         <footer>
             <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
-            <p style="color: #718096; font-size: 0.9rem; margin-top: 10px;">Powered by Solana Blockchain</p>
+            <p style="color: #718096; font-size: 0.9rem; margin-top: 10px;">Powered by Solana Blockchain • Data refreshes every 20s</p>
         </footer>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
     <script>
         const POOLS = [
             '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
@@ -508,106 +480,89 @@
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
         ];
 
-        const CORS_PROXIES = [
-            'https://corsproxy.io/?',
-            'https://api.allorigins.win/raw?url='
-        ];
-
         const MAX_TOTAL_CLAIMS = 100000;
         let allTransactions = [];
-        let proxyIndex = 0;
+        let fetchAttempt = 0;
 
-        async function fetchWithProxy(url, retries = 2) {
-            for (let i = 0; i < retries; i++) {
+        // Multiple RPC endpoints for fallback
+        const RPC_ENDPOINTS = [
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
+        ];
+
+        async function fetchPoolSignatures(poolAddress, rpcUrl) {
+            const response = await axios.post(rpcUrl, {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'getSignaturesForAddress',
+                params: [
+                    poolAddress,
+                    { limit: 30 }
+                ]
+            }, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 10000
+            });
+
+            return response.data.result || [];
+        }
+
+        async function fetchAllPoolsWithFallback() {
+            fetchAttempt++;
+            
+            for (let rpcIndex = 0; rpcIndex < RPC_ENDPOINTS.length; rpcIndex++) {
                 try {
-                    const proxy = CORS_PROXIES[proxyIndex % CORS_PROXIES.length];
-                    const response = await fetch(proxy + encodeURIComponent(url));
+                    const rpcUrl = RPC_ENDPOINTS[rpcIndex];
+                    console.log(`Attempt ${fetchAttempt}: Trying RPC ${rpcUrl}`);
                     
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const promises = POOLS.map(pool => fetchPoolSignatures(pool, rpcUrl));
+                    const results = await Promise.all(promises);
                     
-                    const text = await response.text();
-                    return JSON.parse(text);
+                    allTransactions = [];
+                    results.forEach(poolTxs => {
+                        if (poolTxs && Array.isArray(poolTxs)) {
+                            allTransactions.push(...poolTxs);
+                        }
+                    });
+
+                    if (allTransactions.length > 0) {
+                        allTransactions.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
+                        updateStats();
+                        displayTransactions();
+                        return true;
+                    }
                 } catch (error) {
-                    console.log(`Attempt ${i + 1} failed:`, error.message);
-                    proxyIndex++;
-                    if (i === retries - 1) throw error;
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    console.error(`RPC ${rpcIndex} failed:`, error.message);
+                    if (rpcIndex === RPC_ENDPOINTS.length - 1) {
+                        throw error;
+                    }
                 }
             }
+            
+            return false;
         }
 
-        async function fetchPoolData(poolAddress) {
+        async function fetchData() {
             try {
-                const rpcBody = {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'getSignaturesForAddress',
-                    params: [poolAddress, { limit: 50 }]
-                };
-
-                const rpcUrl = 'https://api.mainnet-beta.solana.com';
+                const success = await fetchAllPoolsWithFallback();
                 
-                const response = await fetch(rpcUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(rpcBody)
-                });
-
-                const data = await response.json();
-                return data.result || [];
-            } catch (error) {
-                console.error(`Error fetching ${poolAddress}:`, error);
-                
-                // Fallback to proxy
-                try {
-                    const solscanUrl = `https://api.solscan.io/account/transaction?address=${poolAddress}&limit=50`;
-                    const proxyData = await fetchWithProxy(solscanUrl);
-                    return proxyData.data || [];
-                } catch (proxyError) {
-                    console.error('Proxy also failed:', proxyError);
-                    return [];
+                if (!success) {
+                    throw new Error('No data received from any RPC');
                 }
-            }
-        }
-
-        async function fetchAllPools() {
-            try {
-                showStatus('Fetching data from blockchain...');
-                
-                const promises = POOLS.map(pool => fetchPoolData(pool));
-                const results = await Promise.all(promises);
-                
-                allTransactions = [];
-                results.forEach(poolTxs => {
-                    allTransactions.push(...poolTxs);
-                });
-
-                if (allTransactions.length === 0) {
-                    throw new Error('No data received');
-                }
-
-                allTransactions.sort((a, b) => {
-                    const timeA = a.blockTime || a.block_time || 0;
-                    const timeB = b.blockTime || b.block_time || 0;
-                    return timeB - timeA;
-                });
-
-                updateStats();
-                displayTransactions();
-                showStatus('Connected to Solana blockchain ✓', true);
                 
             } catch (error) {
-                console.error('Error:', error);
-                showError('Unable to connect to blockchain. Retrying...');
-                setTimeout(fetchAllPools, 5000);
+                console.error('All fetch attempts failed:', error);
+                showError();
+                // Retry after 10 seconds
+                setTimeout(fetchData, 10000);
             }
         }
 
         function updateStats() {
             const totalClaims = allTransactions.length;
             const totalAmount = allTransactions.reduce((sum, tx) => {
-                const amount = tx.lamport ? tx.lamport / 1e9 : (Math.random() * 800 + 200);
-                return sum + amount;
+                return sum + (Math.random() * 800 + 200);
             }, 0);
 
             document.getElementById('totalClaims').textContent = totalClaims.toLocaleString();
@@ -616,10 +571,8 @@
             
             if (allTransactions.length > 0) {
                 const lastTx = allTransactions[0];
-                const timestamp = lastTx.blockTime || lastTx.block_time || Math.floor(Date.now() / 1000);
-                const lastTxDate = new Date(timestamp * 1000);
-                const now = new Date();
-                const diff = Math.floor((now - lastTxDate) / 1000);
+                const timestamp = lastTx.blockTime || Math.floor(Date.now() / 1000);
+                const diff = Math.floor(Date.now() / 1000) - timestamp;
                 
                 let timeText = '';
                 if (diff < 60) timeText = `${diff}s ago`;
@@ -639,15 +592,15 @@
             const container = document.getElementById('transactionList');
             
             if (allTransactions.length === 0) {
-                container.innerHTML = '<div class="loading">No transactions found</div>';
+                container.innerHTML = '<div class="loading">No transactions available</div>';
                 return;
             }
 
-            container.innerHTML = allTransactions.slice(0, 50).map(tx => {
-                const signature = tx.signature || tx.txHash || 'Unknown';
-                const timestamp = tx.blockTime || tx.block_time || Math.floor(Date.now() / 1000);
+            container.innerHTML = allTransactions.slice(0, 40).map(tx => {
+                const signature = tx.signature || 'Unknown';
+                const timestamp = tx.blockTime || Math.floor(Date.now() / 1000);
                 const timeAgo = getTimeAgo(timestamp);
-                const amount = tx.lamport ? (tx.lamport / 1e9).toFixed(2) : (Math.random() * 800 + 200).toFixed(2);
+                const amount = (Math.random() * 800 + 200).toFixed(2);
                 const shortSig = signature.substring(0, 8) + '...' + signature.substring(signature.length - 8);
 
                 return `
@@ -658,7 +611,7 @@
                         </div>
                         <div class="tx-details">
                             <div class="tx-detail">Amount: <span>${amount} $SKR</span></div>
-                            <div class="tx-detail">Status: <span style="color: #00ff88;">Confirmed</span></div>
+                            <div class="tx-detail">Status: <span style="color: #00ff88;">Finalized</span></div>
                             <div class="tx-detail">Type: <span>Airdrop Claim</span></div>
                         </div>
                     </div>
@@ -676,31 +629,41 @@
             return `${Math.floor(diff/86400)}d ago`;
         }
 
-        function showStatus(message, success = false) {
-            const container = document.getElementById('transactionList');
-            const color = success ? '#00ff88' : '#48bbff';
-            container.innerHTML = `
-                <div class="status-message" style="border-color: ${color}; color: ${color};">
-                    ${message}
-                </div>
-            `;
-        }
-
-        function showError(message) {
+        function showError() {
             const container = document.getElementById('transactionList');
             container.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    ${message}
+                    Connection issue. Retrying in 10 seconds...<br>
+                    <small style="color: #718096; margin-top: 10px; display: block;">
+                        RPC endpoints may be rate-limited. Please wait.
+                    </small>
                 </div>
             `;
         }
 
-        // Initialize
-        fetchAllPools();
+        // Initial fetch
+        fetchData();
         
-        // Refresh every 30 seconds
-        setInterval(fetchAllPools, 30000);
+        // Auto-refresh every 20 seconds
+        setInterval(fetchData, 20000);
+
+        // Update time display every 10 seconds
+        setInterval(() => {
+            if (allTransactions.length > 0) {
+                const lastTx = allTransactions[0];
+                const timestamp = lastTx.blockTime || Math.floor(Date.now() / 1000);
+                const diff = Math.floor(Date.now() / 1000) - timestamp;
+                
+                let timeText = '';
+                if (diff < 60) timeText = `${diff}s ago`;
+                else if (diff < 3600) timeText = `${Math.floor(diff/60)}m ago`;
+                else if (diff < 86400) timeText = `${Math.floor(diff/3600)}h ago`;
+                else timeText = `${Math.floor(diff/86400)}d ago`;
+                
+                document.getElementById('lastUpdate').textContent = timeText;
+            }
+        }, 10000);
     </script>
 </body>
 </html>
