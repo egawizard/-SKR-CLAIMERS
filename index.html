@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$SKR Airdrop Claim Progress | Solana Mobile Token</title>
+    <title>$SKR Airdrop Claims - Live Tracker</title>
     <style>
         * {
             margin: 0;
@@ -13,71 +13,38 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0d2e 50%, #0a0a0a 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, #0a0118 0%, #1a0b2e 50%, #2d1b4e 100%);
+            color: #fff;
             min-height: 100vh;
+            padding: 20px;
             position: relative;
             overflow-x: hidden;
         }
 
-        .background-grid {
+        body::before {
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(138, 43, 226, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(138, 43, 226, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(75, 0, 130, 0.15) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
-        }
-
-        .glow-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.3;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .orb-1 {
-            width: 400px;
-            height: 400px;
-            background: #9945FF;
-            top: -200px;
-            right: -200px;
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .orb-2 {
-            width: 300px;
-            height: 300px;
-            background: #14F195;
-            bottom: -150px;
-            left: -150px;
-            animation: float 15s ease-in-out infinite reverse;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(50px, 50px); }
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 40px 20px;
             position: relative;
             z-index: 1;
         }
 
-        header {
+        .header {
             text-align: center;
-            margin-bottom: 60px;
-            padding-top: 20px;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease;
         }
 
         .logo-section {
@@ -88,23 +55,23 @@
             margin-bottom: 20px;
         }
 
-        .token-logo {
+        .logo {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #9945FF, #14F195);
+            background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 28px;
             font-weight: bold;
-            box-shadow: 0 0 30px rgba(153, 69, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(147, 51, 234, 0.4);
         }
 
         h1 {
-            font-size: 3.5em;
+            font-size: 3em;
             font-weight: 800;
-            background: linear-gradient(135deg, #9945FF, #14F195);
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #f59e0b 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -114,20 +81,21 @@
 
         .subtitle {
             font-size: 1.2em;
-            color: #a0a0a0;
+            color: #c4b5fd;
             font-weight: 300;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease 0.2s both;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 30px;
@@ -143,27 +111,22 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #9945FF, #14F195);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
+            background: linear-gradient(90deg, #9333ea, #ec4899, #f59e0b);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            border-color: rgba(153, 69, 255, 0.5);
-            box-shadow: 0 10px 40px rgba(153, 69, 255, 0.2);
-        }
-
-        .stat-card:hover::before {
-            transform: scaleX(1);
+            box-shadow: 0 20px 60px rgba(147, 51, 234, 0.3);
+            border-color: rgba(147, 51, 234, 0.5);
         }
 
         .stat-label {
             font-size: 0.9em;
-            color: #888;
+            color: #c4b5fd;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .stat-value {
@@ -173,38 +136,37 @@
             margin-bottom: 5px;
         }
 
-        .stat-subvalue {
-            font-size: 0.95em;
-            color: #14F195;
+        .stat-subtext {
+            font-size: 0.85em;
+            color: #a78bfa;
         }
 
         .progress-section {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 40px;
             margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease 0.4s both;
         }
 
         .progress-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .progress-title {
             font-size: 1.5em;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .progress-percentage {
             font-size: 2em;
-            font-weight: 700;
-            background: linear-gradient(135deg, #9945FF, #14F195);
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -212,18 +174,18 @@
 
         .progress-bar-container {
             width: 100%;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #9945FF, #14F195);
-            border-radius: 20px;
+            background: linear-gradient(90deg, #9333ea 0%, #ec4899 50%, #f59e0b 100%);
+            border-radius: 15px;
             transition: width 1s ease;
             position: relative;
             overflow: hidden;
@@ -245,198 +207,124 @@
             100% { transform: translateX(100%); }
         }
 
-        .content-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 30px;
-            margin-top: 40px;
-        }
-
-        .pools-section {
-            flex: 1;
-        }
-
-        .pools-title {
-            font-size: 1.8em;
-            font-weight: 600;
-            margin-bottom: 25px;
-        }
-
-        .pool-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .pool-card:hover {
-            border-color: rgba(153, 69, 255, 0.5);
-            transform: translateX(5px);
-        }
-
-        .pool-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .pool-name {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #14F195;
-        }
-
-        .pool-address {
-            font-size: 0.85em;
-            color: #9945FF;
-            font-family: 'Courier New', monospace;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .pool-address:hover {
-            color: #14F195;
-        }
-
         .transactions-section {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            padding: 30px;
-            height: fit-content;
-            position: sticky;
-            top: 20px;
+            padding: 40px;
+            animation: fadeInUp 0.8s ease 0.6s both;
         }
 
-        .transactions-title {
-            font-size: 1.5em;
-            font-weight: 600;
-            margin-bottom: 20px;
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .live-indicator {
-            width: 10px;
-            height: 10px;
-            background: #14F195;
+            width: 12px;
+            height: 12px;
+            background: #10b981;
             border-radius: 50%;
             animation: pulse 2s infinite;
+            box-shadow: 0 0 15px #10b981;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 10px #14F195; }
-            50% { opacity: 0.3; box-shadow: 0 0 20px #14F195; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
         }
 
         .tx-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             max-height: 600px;
             overflow-y: auto;
             padding-right: 10px;
         }
 
         .tx-list::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
 
         .tx-list::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
 
         .tx-list::-webkit-scrollbar-thumb {
-            background: rgba(153, 69, 255, 0.5);
+            background: linear-gradient(135deg, #9333ea, #ec4899);
             border-radius: 10px;
         }
 
         .tx-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
             transition: all 0.3s ease;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .tx-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(153, 69, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(147, 51, 234, 0.5);
             transform: translateX(5px);
         }
 
-        .tx-hash {
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            color: #9945FF;
-            margin-bottom: 8px;
-            word-break: break-all;
+        .tx-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .tx-link {
-            color: #9945FF;
+        .tx-signature {
+            font-family: 'Courier New', monospace;
+            color: #a78bfa;
+            font-size: 0.9em;
             text-decoration: none;
             transition: color 0.3s ease;
         }
 
-        .tx-link:hover {
-            color: #14F195;
-            text-decoration: underline;
+        .tx-signature:hover {
+            color: #ec4899;
         }
 
         .tx-amount {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #14F195;
-            margin-bottom: 5px;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #10b981;
         }
 
         .tx-time {
-            font-size: 0.8em;
-            color: #666;
+            color: #9ca3af;
+            font-size: 0.85em;
         }
 
-        .tx-status {
-            display: inline-block;
-            padding: 3px 8px;
-            background: rgba(20, 241, 149, 0.2);
-            border-radius: 5px;
-            font-size: 0.75em;
-            color: #14F195;
-            margin-top: 5px;
+        .tx-address {
+            font-family: 'Courier New', monospace;
+            color: #6b7280;
+            font-size: 0.85em;
         }
 
         .loading {
             text-align: center;
             padding: 40px;
-            color: #888;
+            color: #a78bfa;
+            font-size: 1.1em;
         }
 
         .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid #9945FF;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #9333ea;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
@@ -446,378 +334,407 @@
             100% { transform: rotate(360deg); }
         }
 
-        footer {
+        .footer {
             text-align: center;
-            padding: 40px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
             margin-top: 60px;
+            padding: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.8s ease 0.8s both;
         }
 
         .creator-link {
-            color: #14F195;
+            color: #a78bfa;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 30px;
+            border: 1px solid rgba(147, 51, 234, 0.3);
         }
 
         .creator-link:hover {
-            color: #9945FF;
-            text-shadow: 0 0 10px rgba(153, 69, 255, 0.5);
+            color: #ec4899;
+            background: rgba(147, 51, 234, 0.2);
+            border-color: rgba(236, 72, 153, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
         }
 
-        .error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            color: #ff6b6b;
-        }
-
-        .last-updated {
-            font-size: 0.85em;
-            color: #666;
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 1200px) {
-            .content-wrapper {
-                grid-template-columns: 1fr;
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
             }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-            .transactions-section {
-                position: relative;
-                top: 0;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
         @media (max-width: 768px) {
             h1 {
-                font-size: 2.5em;
+                font-size: 2em;
             }
 
             .stats-grid {
                 grid-template-columns: 1fr;
             }
 
-            .progress-section {
+            .progress-section, .transactions-section {
                 padding: 25px;
+            }
+
+            .tx-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="background-grid"></div>
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
-
     <div class="container">
-        <header>
+        <div class="header">
             <div class="logo-section">
-                <div class="token-logo">$</div>
+                <div class="logo">$</div>
+                <h1>$SKR AIRDROP TRACKER</h1>
             </div>
-            <h1>$SKR AIRDROP</h1>
-            <p class="subtitle">Real-time Claim Progress Tracker</p>
-        </header>
+            <p class="subtitle">Real-time Solana Mainnet Claims Monitor</p>
+        </div>
 
-        <div id="content">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Connecting to Solana RPC...</p>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Claims</div>
+                <div class="stat-value" id="totalClaims">Loading...</div>
+                <div class="stat-subtext">Successful transactions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Claimed</div>
+                <div class="stat-value" id="totalAmount">Loading...</div>
+                <div class="stat-subtext">$SKR tokens distributed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unique Claimers</div>
+                <div class="stat-value" id="uniqueClaimers">Loading...</div>
+                <div class="stat-subtext">Wallet addresses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Updated</div>
+                <div class="stat-value" id="lastUpdate" style="font-size: 1.4em;">-</div>
+                <div class="stat-subtext">Live data feed</div>
             </div>
         </div>
 
-        <footer>
-            <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
-            <p style="color: #666; margin-top: 10px; font-size: 0.9em;">Live data from Solana Mainnet</p>
-        </footer>
+        <div class="progress-section">
+            <div class="progress-header">
+                <div class="progress-title">Claim Progress</div>
+                <div class="progress-percentage" id="progressPercentage">0.00%</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="transactions-section">
+            <div class="section-title">
+                <div class="live-indicator"></div>
+                Live Transactions
+            </div>
+            <div id="txList" class="tx-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Fetching real transaction data from Solana blockchain...
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <a href="https://x.com/ega_2ez4crypto" target="_blank" rel="noopener noreferrer" class="creator-link">
+                <span>🚀</span>
+                Created by @ega_2ez4crypto
+            </a>
+        </div>
     </div>
 
     <script>
-        const TOKEN_MINT = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
-        const POOL_ADDRESSES = [
+        const POOLS = [
             '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
             'CYPdPHMh1mD6ioFFVva7L2rFeKLBpcefVv5yv1p6iRqB',
             '97KS7T6e5KV9iVEGkxkKPNU6CbF7Eeei7dQ498xtSQx3',
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
         ];
 
-        const RPC_ENDPOINTS = [
-            'https://api.mainnet-beta.solana.com',
-            'https://solana-api.projectserum.com',
-            'https://rpc.ankr.com/solana'
-        ];
+        const TOKEN_MINT = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
+        const TOTAL_SUPPLY = 1000000000;
 
-        let currentRpcIndex = 0;
-        let poolsData = [];
-        let recentTransactions = [];
-        let lastUpdateTime = null;
+        let allTransactions = [];
 
-        function getRpcEndpoint() {
-            return RPC_ENDPOINTS[currentRpcIndex];
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(2) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(2) + 'K';
+            }
+            return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
         }
 
-        function rotateRpc() {
-            currentRpcIndex = (currentRpcIndex + 1) % RPC_ENDPOINTS.length;
+        function formatAddress(address) {
+            if (!address) return 'Unknown';
+            return address.slice(0, 6) + '...' + address.slice(-6);
         }
 
-        async function rpcCall(method, params) {
-            const maxRetries = RPC_ENDPOINTS.length;
+        function timeAgo(timestamp) {
+            const seconds = Math.floor(Date.now() / 1000) - timestamp;
             
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(getRpcEndpoint(), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            jsonrpc: '2.0',
-                            id: 1,
-                            method: method,
-                            params: params
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    
-                    if (data.error) {
-                        throw new Error(data.error.message);
-                    }
-
-                    return data.result;
-                } catch (error) {
-                    console.error(`RPC call failed (${getRpcEndpoint()}):`, error);
-                    rotateRpc();
-                    
-                    if (i === maxRetries - 1) {
-                        throw error;
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
+            if (seconds < 60) return `${seconds}s ago`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
         }
 
-        async function getTokenAccountsByOwner(ownerAddress) {
+        async function fetchPoolSignatures(poolAddress) {
             try {
-                const result = await rpcCall('getTokenAccountsByOwner', [
-                    ownerAddress,
-                    { mint: TOKEN_MINT },
-                    { encoding: 'jsonParsed' }
-                ]);
+                const response = await fetch('https://api.mainnet-beta.solana.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'getSignaturesForAddress',
+                        params: [
+                            poolAddress,
+                            { limit: 100 }
+                        ]
+                    })
+                });
 
-                if (result && result.value && result.value.length > 0) {
-                    const accountInfo = result.value[0].account.data.parsed.info;
-                    return parseFloat(accountInfo.tokenAmount.uiAmount || 0);
-                }
-                return 0;
-            } catch (error) {
-                console.error(`Error fetching token account for ${ownerAddress}:`, error);
-                return null;
-            }
-        }
-
-        async function getSignaturesForAddress(address, limit = 10) {
-            try {
-                const result = await rpcCall('getSignaturesForAddress', [
-                    address,
-                    { limit: limit }
-                ]);
-                return result || [];
-            } catch (error) {
-                console.error(`Error fetching signatures for ${address}:`, error);
+                const data = await response.json();
+                return data.result || [];
+            } catch (err) {
+                console.error(`Error fetching signatures for ${poolAddress}:`, err);
                 return [];
             }
         }
 
-        async function loadPoolData() {
-            const promises = POOL_ADDRESSES.map(async (address, index) => {
-                const balance = await getTokenAccountsByOwner(address);
+        async function fetchTransactionDetails(signature) {
+            try {
+                const response = await fetch('https://api.mainnet-beta.solana.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'getTransaction',
+                        params: [
+                            signature,
+                            {
+                                encoding: 'jsonParsed',
+                                maxSupportedTransactionVersion: 0
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                return data.result;
+            } catch (err) {
+                console.error(`Error fetching tx ${signature}:`, err);
+                return null;
+            }
+        }
+
+        function extractTokenTransferAmount(tx) {
+            if (!tx || !tx.meta || !tx.meta.postTokenBalances) return 0;
+
+            const preBalances = tx.meta.preTokenBalances || [];
+            const postBalances = tx.meta.postTokenBalances || [];
+
+            for (const postBal of postBalances) {
+                if (postBal.mint === TOKEN_MINT) {
+                    const preBal = preBalances.find(pb => 
+                        pb.accountIndex === postBal.accountIndex
+                    );
+                    
+                    const preAmount = preBal ? parseFloat(preBal.uiTokenAmount.uiAmountString) : 0;
+                    const postAmount = parseFloat(postBal.uiTokenAmount.uiAmountString);
+                    const diff = postAmount - preAmount;
+                    
+                    if (diff > 0) {
+                        return diff;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        async function fetchAllTransactions() {
+            const allSigs = [];
+
+            for (const pool of POOLS) {
+                const sigs = await fetchPoolSignatures(pool);
+                allSigs.push(...sigs.slice(0, 25));
+                await new Promise(r => setTimeout(r, 300));
+            }
+
+            const uniqueSigs = [...new Map(allSigs.map(s => [s.signature, s])).values()];
+            uniqueSigs.sort((a, b) => b.blockTime - a.blockTime);
+
+            const transactions = [];
+            
+            for (let i = 0; i < Math.min(uniqueSigs.length, 50); i++) {
+                const sig = uniqueSigs[i];
+                const txDetail = await fetchTransactionDetails(sig.signature);
                 
-                return {
-                    address: address,
-                    balance: balance !== null ? balance : 0,
-                    shortAddress: address.substring(0, 4) + '...' + address.substring(address.length - 4),
-                    error: balance === null,
-                    index: index + 1
-                };
+                if (txDetail) {
+                    const amount = extractTokenTransferAmount(txDetail);
+                    
+                    if (amount > 0) {
+                        transactions.push({
+                            signature: sig.signature,
+                            blockTime: sig.blockTime,
+                            amount: amount,
+                            signer: txDetail.transaction?.message?.accountKeys?.[0]?.pubkey || 
+                                   txDetail.transaction?.message?.accountKeys?.[0] || 
+                                   'Unknown'
+                        });
+                    }
+                }
+                
+                if (i % 5 === 0) {
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            }
+
+            return transactions;
+        }
+
+        function calculateStats(transactions) {
+            const uniqueAddresses = new Set();
+            let totalAmount = 0;
+            
+            transactions.forEach(tx => {
+                if (tx.signer) {
+                    uniqueAddresses.add(tx.signer);
+                }
+                totalAmount += tx.amount;
             });
 
-            poolsData = await Promise.all(promises);
+            return {
+                totalClaims: transactions.length,
+                totalAmount: totalAmount,
+                uniqueClaimers: uniqueAddresses.size,
+                progressPercentage: Math.min((totalAmount / TOTAL_SUPPLY) * 100, 100)
+            };
         }
 
-        async function loadTransactions() {
-            try {
-                const allSigs = [];
-                
-                for (const address of POOL_ADDRESSES) {
-                    const signatures = await getSignaturesForAddress(address, 5);
-                    signatures.forEach(sig => {
-                        allSigs.push({
-                            signature: sig.signature,
-                            slot: sig.slot,
-                            timestamp: sig.blockTime,
-                            poolAddress: address,
-                            err: sig.err
-                        });
-                    });
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                }
-
-                allSigs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                recentTransactions = allSigs.slice(0, 15);
-            } catch (error) {
-                console.error('Error loading transactions:', error);
-            }
-        }
-
-        async function loadAllData() {
-            try {
-                await loadPoolData();
-                await loadTransactions();
-                lastUpdateTime = new Date();
-                displayData();
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('content').innerHTML = `
-                    <div class="error">
-                        <h3>Connection Error</h3>
-                        <p>Unable to connect to Solana RPC. Retrying...</p>
-                        <p style="font-size: 0.9em; margin-top: 10px;">${error.message}</p>
+        function renderTransactions(transactions) {
+            const txList = document.getElementById('txList');
+            
+            if (transactions.length === 0) {
+                txList.innerHTML = `
+                    <div class="loading">
+                        No token transfer transactions found yet.<br>
+                        Please wait for new claims or refresh the page.
                     </div>
                 `;
-                setTimeout(loadAllData, 5000);
+                return;
+            }
+
+            const html = transactions.map((tx, idx) => `
+                <div class="tx-item" style="animation: slideIn 0.5s ease ${idx * 0.05}s both">
+                    <div class="tx-row">
+                        <a href="https://solscan.io/tx/${tx.signature}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="tx-signature"
+                           title="${tx.signature}">
+                            ${formatAddress(tx.signature)}
+                        </a>
+                        <div class="tx-amount">+${formatNumber(tx.amount)} $SKR</div>
+                    </div>
+                    <div class="tx-row">
+                        <div class="tx-address" title="${tx.signer}">${formatAddress(tx.signer)}</div>
+                        <div class="tx-time">${timeAgo(tx.blockTime)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            txList.innerHTML = html;
+        }
+
+        function updateUI(stats) {
+            document.getElementById('totalClaims').textContent = formatNumber(stats.totalClaims);
+            document.getElementById('totalAmount').textContent = formatNumber(stats.totalAmount);
+            document.getElementById('uniqueClaimers').textContent = formatNumber(stats.uniqueClaimers);
+            document.getElementById('progressPercentage').textContent = stats.progressPercentage.toFixed(2) + '%';
+            
+            setTimeout(() => {
+                document.getElementById('progressBar').style.width = Math.min(stats.progressPercentage, 100) + '%';
+            }, 100);
+            
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        async function updateData() {
+            try {
+                console.log('Fetching real transaction data...');
+                const transactions = await fetchAllTransactions();
+                
+                console.log(`Found ${transactions.length} token transfer transactions`);
+                allTransactions = transactions;
+                
+                if (transactions.length > 0) {
+                    const stats = calculateStats(transactions);
+                    updateUI(stats);
+                    renderTransactions(transactions);
+                } else {
+                    document.getElementById('txList').innerHTML = `
+                        <div class="loading">
+                            Scanning blockchain for $SKR token transfers...<br>
+                            This may take a moment.
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error updating data:', err);
+                document.getElementById('txList').innerHTML = `
+                    <div class="loading">
+                        Error loading data. Retrying in 30 seconds...<br>
+                        <small>${err.message}</small>
+                    </div>
+                `;
             }
         }
 
-        function formatNumber(num) {
-            if (num === null || num === undefined) return '0.00';
-            return new Intl.NumberFormat('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(num);
-        }
+        updateData();
+        setInterval(updateData, 60000);
 
-        function formatTime(timestamp) {
-            if (!timestamp) return 'Unknown';
-            const date = new Date(timestamp * 1000);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000);
-            
-            if (diff < 60) return `${diff}s ago`;
-            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-            return `${Math.floor(diff / 86400)}d ago`;
-        }
-
-        function displayData() {
-            const TOTAL_AIRDROP = 10000000;
-            
-            const totalCurrentBalance = poolsData.reduce((sum, pool) => {
-                return sum + (pool.error ? 0 : pool.balance);
-            }, 0);
-            
-            const claimed = TOTAL_AIRDROP - totalCurrentBalance;
-            const claimPercentage = Math.min(100, (claimed / TOTAL_AIRDROP * 100)).toFixed(2);
-            const estimatedUsers = Math.floor(claimed / 500);
-
-            const transactionsHtml = recentTransactions.length > 0 ? 
-                recentTransactions.map(tx => {
-                    const shortSig = tx.signature.substring(0, 8) + '...' + tx.signature.substring(tx.signature.length - 8);
-                    const poolShort = tx.poolAddress.substring(0, 4) + '...' + tx.poolAddress.substring(tx.poolAddress.length - 4);
-                    const statusClass = tx.err ? 'Failed' : 'Success';
-                    
-                    return `
-                        <div class="tx-item">
-                            <div class="tx-hash">
-                                <a href="https://solscan.io/tx/${tx.signature}" target="_blank" class="tx-link">
-                                    ${shortSig}
-                                </a>
-                            </div>
-                            <div class="tx-amount">Transfer Transaction</div>
-                            <div class="tx-time">${formatTime(tx.timestamp)}</div>
-                            <div class="tx-status">${statusClass} • ${poolShort}</div>
-                        </div>
-                    `;
-                }).join('') : 
-                '<p style="color: #666; text-align: center; padding: 20px;">Loading transactions...</p>';
-
-            const lastUpdate = lastUpdateTime ? formatTime(Math.floor(lastUpdateTime.getTime() / 1000)) : 'Just now';
-
-            const html = `
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Total Airdrop Pool</div>
-                        <div class="stat-value">${formatNumber(TOTAL_AIRDROP)}</div>
-                        <div class="stat-subvalue">$SKR Tokens</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Tokens Claimed</div>
-                        <div class="stat-value">${formatNumber(claimed)}</div>
-                        <div class="stat-subvalue">${claimPercentage}% Complete</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Remaining Balance</div>
-                        <div class="stat-value">${formatNumber(totalCurrentBalance)}</div>
-                        <div class="stat-subvalue">In All Pools</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Estimated Claims</div>
-                        <div class="stat-value">${formatNumber(estimatedUsers)}</div>
-                        <div class="stat-subvalue">Users Claimed</div>
-                    </div>
-                </div>
-
-                <div class="progress-section">
-                    <div class="progress-header">
-                        <div class="progress-title">Airdrop Claim Progress</div>
-                        <div class="progress-percentage">${claimPercentage}%</div>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: ${claimPercentage}%"></div>
-                    </div>
-                    <div class="last-updated">Last updated: ${lastUpdate}</div>
-                </div>
-
-                <div class="content-wrapper">
-                    <div class="pools-section">
-                        <h2 class="pools-title">Individual Pool Status</h2>
-                        ${poolsData.map((pool) => `
-                            <div class="pool-card">
-                                <div class="pool-header">
-                                    <div class="pool-name">Pool #${pool.index}</div>
-                                    <a href="https://solscan.io/account/${pool.address}" target="_blank" class="pool-address">${pool.shortAddress}</a>
-                                </div>
-                                <div class="stat-label">Current Balance</div>
-                                <div class="stat-value" style="font-size: 1.5em;">
-                                    ${pool.error ? '---' : formatNumber(pool.balance)} $SKR
-                                </div>
-                                ${pool.error ? '<p style="color: #ff6b6b; margin-top: 10px; font-size: 0.9em;">⚠ Unable to fetch data</p>' : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="transactions-section">
-                        <div class="transactions-title">
-                            <span class="live-indicator"></span>
-                            Recent Transactions
-                        </div>
-                        <div class="tx-list">
-                            ${transactionsHtml}
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('content').innerHTML = html;
-        }
-
-        loadAllData();
-        setInterval(loadAllData, 30000);
+        setInterval(() => {
+            if (allTransactions.length > 0) {
+                renderTransactions(allTransactions);
+            }
+        }, 15000);
     </script>
 </body>
 </html>
