@@ -294,14 +294,14 @@
 
         .pool-address {
             font-size: 0.85em;
-            color: #666;
+            color: #9945FF;
             font-family: 'Courier New', monospace;
-            cursor: pointer;
+            text-decoration: none;
             transition: color 0.3s ease;
         }
 
         .pool-address:hover {
-            color: #9945FF;
+            color: #14F195;
         }
 
         .transactions-section {
@@ -333,8 +333,8 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            0%, 100% { opacity: 1; box-shadow: 0 0 10px #14F195; }
+            50% { opacity: 0.3; box-shadow: 0 0 20px #14F195; }
         }
 
         .tx-list {
@@ -415,7 +415,7 @@
             color: #666;
         }
 
-        .tx-type {
+        .tx-status {
             display: inline-block;
             padding: 3px 8px;
             background: rgba(20, 241, 149, 0.2);
@@ -474,6 +474,13 @@
             color: #ff6b6b;
         }
 
+        .last-updated {
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
+            margin-top: 15px;
+        }
+
         @media (max-width: 1200px) {
             .content-wrapper {
                 grid-template-columns: 1fr;
@@ -517,18 +524,18 @@
         <div id="content">
             <div class="loading">
                 <div class="spinner"></div>
-                <p>Loading airdrop data from Solana network...</p>
+                <p>Connecting to Solana RPC...</p>
             </div>
         </div>
 
         <footer>
             <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank" class="creator-link">@ega_2ez4crypto</a></p>
-            <p style="color: #666; margin-top: 10px; font-size: 0.9em;">Data sourced from Solana blockchain</p>
+            <p style="color: #666; margin-top: 10px; font-size: 0.9em;">Live data from Solana Mainnet</p>
         </footer>
     </div>
 
     <script>
-        const TOKEN_CA = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
+        const TOKEN_MINT = 'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3';
         const POOL_ADDRESSES = [
             '7MMQtChjiwojUAhhZjeRrnnbn2VKfifKsUcAhfAjgUWZ',
             'CYPdPHMh1mD6ioFFVva7L2rFeKLBpcefVv5yv1p6iRqB',
@@ -536,109 +543,159 @@
             '82NacLStPnYswsaBnAA1Cf6ASqXY674mjLdRv7qd7CAX'
         ];
 
+        const RPC_ENDPOINTS = [
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
+        ];
+
+        let currentRpcIndex = 0;
         let poolsData = [];
-        let allTransactions = [];
-        const TOTAL_AIRDROP = 10000000;
+        let recentTransactions = [];
+        let lastUpdateTime = null;
 
-        async function fetchWithRetry(url, retries = 3) {
-            for (let i = 0; i < retries; i++) {
+        function getRpcEndpoint() {
+            return RPC_ENDPOINTS[currentRpcIndex];
+        }
+
+        function rotateRpc() {
+            currentRpcIndex = (currentRpcIndex + 1) % RPC_ENDPOINTS.length;
+        }
+
+        async function rpcCall(method, params) {
+            const maxRetries = RPC_ENDPOINTS.length;
+            
+            for (let i = 0; i < maxRetries; i++) {
                 try {
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return await response.json();
-                } catch (error) {
-                    if (i === retries - 1) throw error;
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-                }
-            }
-        }
+                    const response = await fetch(getRpcEndpoint(), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            id: 1,
+                            method: method,
+                            params: params
+                        })
+                    });
 
-        async function fetchPoolBalance(address) {
-            try {
-                await new Promise(resolve => setTimeout(resolve, 200));
-                
-                const data = await fetchWithRetry(
-                    `https://public-api.solscan.io/account/${address}`
-                );
-                
-                const tokenAccounts = data.tokenAccounts || [];
-                const skrAccount = tokenAccounts.find(acc => 
-                    acc.tokenAddress === TOKEN_CA
-                );
-                
-                const balance = skrAccount ? 
-                    (skrAccount.tokenAmount?.uiAmount || 0) : 0;
-                
-                return {
-                    address: address,
-                    balance: balance,
-                    shortAddress: address.substring(0, 4) + '...' + address.substring(address.length - 4),
-                    error: false
-                };
-            } catch (error) {
-                console.error(`Error fetching pool ${address}:`, error);
-                return {
-                    address: address,
-                    balance: 0,
-                    shortAddress: address.substring(0, 4) + '...' + address.substring(address.length - 4),
-                    error: true
-                };
-            }
-        }
-
-        async function fetchTransactions() {
-            try {
-                const allTxs = [];
-                
-                for (const poolAddress of POOL_ADDRESSES) {
-                    try {
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                        
-                        const data = await fetchWithRetry(
-                            `https://public-api.solscan.io/account/transactions?account=${poolAddress}&limit=10`
-                        );
-                        
-                        if (Array.isArray(data)) {
-                            data.forEach(tx => {
-                                allTxs.push({
-                                    ...tx,
-                                    poolAddress: poolAddress
-                                });
-                            });
-                        }
-                    } catch (error) {
-                        console.error(`Error fetching transactions for ${poolAddress}:`, error);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
+
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error.message);
+                    }
+
+                    return data.result;
+                } catch (error) {
+                    console.error(`RPC call failed (${getRpcEndpoint()}):`, error);
+                    rotateRpc();
+                    
+                    if (i === maxRetries - 1) {
+                        throw error;
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
-                
-                allTxs.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
-                allTransactions = allTxs.slice(0, 20);
-                
+            }
+        }
+
+        async function getTokenAccountsByOwner(ownerAddress) {
+            try {
+                const result = await rpcCall('getTokenAccountsByOwner', [
+                    ownerAddress,
+                    { mint: TOKEN_MINT },
+                    { encoding: 'jsonParsed' }
+                ]);
+
+                if (result && result.value && result.value.length > 0) {
+                    const accountInfo = result.value[0].account.data.parsed.info;
+                    return parseFloat(accountInfo.tokenAmount.uiAmount || 0);
+                }
+                return 0;
             } catch (error) {
-                console.error('Error fetching transactions:', error);
+                console.error(`Error fetching token account for ${ownerAddress}:`, error);
+                return null;
+            }
+        }
+
+        async function getSignaturesForAddress(address, limit = 10) {
+            try {
+                const result = await rpcCall('getSignaturesForAddress', [
+                    address,
+                    { limit: limit }
+                ]);
+                return result || [];
+            } catch (error) {
+                console.error(`Error fetching signatures for ${address}:`, error);
+                return [];
+            }
+        }
+
+        async function loadPoolData() {
+            const promises = POOL_ADDRESSES.map(async (address, index) => {
+                const balance = await getTokenAccountsByOwner(address);
+                
+                return {
+                    address: address,
+                    balance: balance !== null ? balance : 0,
+                    shortAddress: address.substring(0, 4) + '...' + address.substring(address.length - 4),
+                    error: balance === null,
+                    index: index + 1
+                };
+            });
+
+            poolsData = await Promise.all(promises);
+        }
+
+        async function loadTransactions() {
+            try {
+                const allSigs = [];
+                
+                for (const address of POOL_ADDRESSES) {
+                    const signatures = await getSignaturesForAddress(address, 5);
+                    signatures.forEach(sig => {
+                        allSigs.push({
+                            signature: sig.signature,
+                            slot: sig.slot,
+                            timestamp: sig.blockTime,
+                            poolAddress: address,
+                            err: sig.err
+                        });
+                    });
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+
+                allSigs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                recentTransactions = allSigs.slice(0, 15);
+            } catch (error) {
+                console.error('Error loading transactions:', error);
             }
         }
 
         async function loadAllData() {
             try {
-                const balancePromises = POOL_ADDRESSES.map(addr => fetchPoolBalance(addr));
-                poolsData = await Promise.all(balancePromises);
-                
-                await fetchTransactions();
-                
+                await loadPoolData();
+                await loadTransactions();
+                lastUpdateTime = new Date();
                 displayData();
             } catch (error) {
+                console.error('Error loading data:', error);
                 document.getElementById('content').innerHTML = `
                     <div class="error">
-                        <h3>Error Loading Data</h3>
-                        <p>Unable to fetch airdrop data. Please refresh the page.</p>
-                        <p style="font-size: 0.9em; margin-top: 10px;">Error: ${error.message}</p>
+                        <h3>Connection Error</h3>
+                        <p>Unable to connect to Solana RPC. Retrying...</p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">${error.message}</p>
                     </div>
                 `;
+                setTimeout(loadAllData, 5000);
             }
         }
 
         function formatNumber(num) {
+            if (num === null || num === undefined) return '0.00';
             return new Intl.NumberFormat('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -658,36 +715,43 @@
         }
 
         function displayData() {
-            const totalCurrentBalance = poolsData.reduce((sum, pool) => sum + pool.balance, 0);
+            const TOTAL_AIRDROP = 10000000;
+            
+            const totalCurrentBalance = poolsData.reduce((sum, pool) => {
+                return sum + (pool.error ? 0 : pool.balance);
+            }, 0);
+            
             const claimed = TOTAL_AIRDROP - totalCurrentBalance;
-            const claimPercentage = (claimed / TOTAL_AIRDROP * 100).toFixed(2);
-            const claimedUsers = Math.floor(claimed / 500);
+            const claimPercentage = Math.min(100, (claimed / TOTAL_AIRDROP * 100)).toFixed(2);
+            const estimatedUsers = Math.floor(claimed / 500);
 
-            const transactionsHtml = allTransactions.length > 0 ? 
-                allTransactions.map(tx => {
-                    const txHash = tx.txHash || 'Unknown';
-                    const shortHash = txHash.substring(0, 8) + '...' + txHash.substring(txHash.length - 8);
+            const transactionsHtml = recentTransactions.length > 0 ? 
+                recentTransactions.map(tx => {
+                    const shortSig = tx.signature.substring(0, 8) + '...' + tx.signature.substring(tx.signature.length - 8);
                     const poolShort = tx.poolAddress.substring(0, 4) + '...' + tx.poolAddress.substring(tx.poolAddress.length - 4);
+                    const statusClass = tx.err ? 'Failed' : 'Success';
                     
                     return `
                         <div class="tx-item">
                             <div class="tx-hash">
-                                <a href="https://solscan.io/tx/${txHash}" target="_blank" class="tx-link">
-                                    ${shortHash}
+                                <a href="https://solscan.io/tx/${tx.signature}" target="_blank" class="tx-link">
+                                    ${shortSig}
                                 </a>
                             </div>
-                            <div class="tx-amount">Claim Transaction</div>
-                            <div class="tx-time">${formatTime(tx.blockTime)}</div>
-                            <div class="tx-type">Pool: ${poolShort}</div>
+                            <div class="tx-amount">Transfer Transaction</div>
+                            <div class="tx-time">${formatTime(tx.timestamp)}</div>
+                            <div class="tx-status">${statusClass} • ${poolShort}</div>
                         </div>
                     `;
                 }).join('') : 
-                '<p style="color: #666; text-align: center; padding: 20px;">No recent transactions</p>';
+                '<p style="color: #666; text-align: center; padding: 20px;">Loading transactions...</p>';
+
+            const lastUpdate = lastUpdateTime ? formatTime(Math.floor(lastUpdateTime.getTime() / 1000)) : 'Just now';
 
             const html = `
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Total Airdrop</div>
+                        <div class="stat-label">Total Airdrop Pool</div>
                         <div class="stat-value">${formatNumber(TOTAL_AIRDROP)}</div>
                         <div class="stat-subvalue">$SKR Tokens</div>
                     </div>
@@ -699,37 +763,40 @@
                     <div class="stat-card">
                         <div class="stat-label">Remaining Balance</div>
                         <div class="stat-value">${formatNumber(totalCurrentBalance)}</div>
-                        <div class="stat-subvalue">Across All Pools</div>
+                        <div class="stat-subvalue">In All Pools</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Estimated Claims</div>
-                        <div class="stat-value">${formatNumber(claimedUsers)}</div>
+                        <div class="stat-value">${formatNumber(estimatedUsers)}</div>
                         <div class="stat-subvalue">Users Claimed</div>
                     </div>
                 </div>
 
                 <div class="progress-section">
                     <div class="progress-header">
-                        <div class="progress-title">Claim Progress</div>
+                        <div class="progress-title">Airdrop Claim Progress</div>
                         <div class="progress-percentage">${claimPercentage}%</div>
                     </div>
                     <div class="progress-bar-container">
                         <div class="progress-bar" style="width: ${claimPercentage}%"></div>
                     </div>
+                    <div class="last-updated">Last updated: ${lastUpdate}</div>
                 </div>
 
                 <div class="content-wrapper">
                     <div class="pools-section">
                         <h2 class="pools-title">Individual Pool Status</h2>
-                        ${poolsData.map((pool, index) => `
+                        ${poolsData.map((pool) => `
                             <div class="pool-card">
                                 <div class="pool-header">
-                                    <div class="pool-name">Pool #${index + 1}</div>
+                                    <div class="pool-name">Pool #${pool.index}</div>
                                     <a href="https://solscan.io/account/${pool.address}" target="_blank" class="pool-address">${pool.shortAddress}</a>
                                 </div>
                                 <div class="stat-label">Current Balance</div>
-                                <div class="stat-value" style="font-size: 1.5em;">${formatNumber(pool.balance)} $SKR</div>
-                                ${pool.error ? '<p style="color: #ff6b6b; margin-top: 10px; font-size: 0.9em;">Error fetching data</p>' : ''}
+                                <div class="stat-value" style="font-size: 1.5em;">
+                                    ${pool.error ? '---' : formatNumber(pool.balance)} $SKR
+                                </div>
+                                ${pool.error ? '<p style="color: #ff6b6b; margin-top: 10px; font-size: 0.9em;">⚠ Unable to fetch data</p>' : ''}
                             </div>
                         `).join('')}
                     </div>
@@ -737,7 +804,7 @@
                     <div class="transactions-section">
                         <div class="transactions-title">
                             <span class="live-indicator"></span>
-                            Live Transactions
+                            Recent Transactions
                         </div>
                         <div class="tx-list">
                             ${transactionsHtml}
