@@ -1,12 +1,17 @@
 {
   "name": "skr-airdrop-tracker",
   "version": "1.0.0",
-  "description": "$SKR Airdrop Claim Tracker",
+  "description": "$SKR Airdrop Claim Tracker - Real-time Solana Mobile",
   "main": "index.html",
   "scripts": {
     "dev": "vercel dev",
-    "deploy": "vercel"
+    "deploy": "vercel --prod"
   },
+  "keywords": ["solana", "skr", "airdrop", "tracker", "crypto"],
   "author": "@ega_2ez4crypto",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
 }
