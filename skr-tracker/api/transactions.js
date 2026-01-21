@@ -1,18 +1,9 @@
-export const config = {
-  runtime: 'edge',
-};
-
-export default async function handler(request) {
-  // Handle CORS
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
   const POOLS = [
@@ -43,7 +34,6 @@ export default async function handler(request) {
       const data = await response.json();
       return data.result || [];
     } catch (error) {
-      console.error(`Error fetching ${poolAddress}:`, error);
       return [];
     }
   }
@@ -52,23 +42,16 @@ export default async function handler(request) {
     let allTransactions = [];
     
     for (const rpcUrl of RPC_ENDPOINTS) {
-      try {
-        const promises = POOLS.map(pool => fetchPoolSignatures(pool, rpcUrl));
-        const results = await Promise.all(promises);
-        
-        results.forEach(poolTxs => {
-          if (poolTxs && Array.isArray(poolTxs)) {
-            allTransactions.push(...poolTxs);
-          }
-        });
-
-        if (allTransactions.length > 0) {
-          break;
+      const promises = POOLS.map(pool => fetchPoolSignatures(pool, rpcUrl));
+      const results = await Promise.all(promises);
+      
+      results.forEach(poolTxs => {
+        if (poolTxs && Array.isArray(poolTxs)) {
+          allTransactions.push(...poolTxs);
         }
-      } catch (error) {
-        console.error(`RPC ${rpcUrl} failed:`, error);
-        continue;
-      }
+      });
+
+      if (allTransactions.length > 0) break;
     }
 
     const uniqueTxs = Array.from(
@@ -77,31 +60,17 @@ export default async function handler(request) {
     
     uniqueTxs.sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
 
-    return new Response(JSON.stringify({
+    res.status(200).json({
       success: true,
       transactions: uniqueTxs,
       count: uniqueTxs.length,
       timestamp: Date.now()
-    }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({
+    res.status(500).json({
       success: false,
-      error: error.message,
-      transactions: [],
-      count: 0
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+      error: error.message
     });
   }
-}
+};
